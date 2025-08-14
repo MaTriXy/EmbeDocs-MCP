@@ -1,6 +1,6 @@
 {
   "name": "mongodocs-mcp",
-  "version": "8.0.0",
+  "version": "8.0.1",
   "description": "Lightning-fast semantic search for MongoDB documentation via Model Context Protocol. 10,000+ documents, <500ms search.",
   "type": "module",
   "main": "dist/index.js",
