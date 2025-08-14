@@ -1,0 +1,105 @@
+{
+  "name": "mongodocs-mcp",
+  "version": "8.0.0",
+  "description": "Lightning-fast semantic search for MongoDB & Voyage AI documentation. 10,000+ documents, <500ms search.",
+  "author": "Rom Iluz",
+  "license": "MIT",
+  "runtime": "node",
+  "main": "dist/index.js",
+  "repository": "https://github.com/romiluz/mongodocs-mcp",
+  "homepage": "https://github.com/romiluz/mongodocs-mcp#readme",
+  "tools": [
+    {
+      "name": "search_mongodb_docs",
+      "description": "Search MongoDB documentation using natural language",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Natural language search query"
+          },
+          "limit": {
+            "type": "number",
+            "description": "Maximum results to return",
+            "default": 5
+          },
+          "products": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filter by specific products (e.g., ['manual', 'pymongo'])"
+          }
+        },
+        "required": ["query"]
+      }
+    },
+    {
+      "name": "explain_mongodb_concept",
+      "description": "Get detailed explanation of MongoDB concepts",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "concept": {
+            "type": "string",
+            "description": "MongoDB concept to explain"
+          },
+          "depth": {
+            "type": "string",
+            "enum": ["beginner", "intermediate", "advanced"],
+            "description": "Level of detail",
+            "default": "intermediate"
+          }
+        },
+        "required": ["concept"]
+      }
+    },
+    {
+      "name": "find_similar_docs",
+      "description": "Find documents similar to provided content",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "description": "Content to find similar documents for"
+          },
+          "limit": {
+            "type": "number",
+            "description": "Maximum results to return",
+            "default": 5
+          }
+        },
+        "required": ["content"]
+      }
+    },
+    {
+      "name": "get_search_status",
+      "description": "Get status of the MongoDB documentation search system",
+      "parameters": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ],
+  "setup": {
+    "required_env": [
+      "MONGODB_URI",
+      "VOYAGE_API_KEY"
+    ],
+    "setup_command": "mongodocs-setup",
+    "index_command": "mongodocs-index"
+  },
+  "capabilities": {
+    "search": true,
+    "semantic": true,
+    "vector": true,
+    "multilingual": false
+  },
+  "requirements": {
+    "node": ">=18.0.0",
+    "mongodb": "Atlas cluster with vector search",
+    "voyage": "API key for embeddings"
+  }
+}

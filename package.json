@@ -1,0 +1,93 @@
+{
+  "name": "mongodocs-mcp",
+  "version": "8.0.0",
+  "description": "Lightning-fast semantic search for MongoDB documentation via Model Context Protocol. 10,000+ documents, <500ms search.",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "mongodocs-mcp": "bin/mongodocs-mcp",
+    "mongodocs-index": "bin/mongodocs-index",
+    "mongodocs-clean": "bin/mongodocs-clean",
+    "mongodocs-setup": "bin/mongodocs-setup"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/index.js",
+    "index": "node dist/cli/index-docs.js",
+    "clean-db": "node dist/cli/clean-database.js",
+    "postinstall": "npm run build",
+    "prepublishOnly": "npm run clean && npm run build",
+    "clean": "rm -rf dist",
+    "lint": "eslint src --ext .ts"
+  },
+  "keywords": [
+    "mcp",
+    "mongodb",
+    "semantic-search",
+    "vector-search",
+    "voyage-ai",
+    "documentation",
+    "atlas",
+    "cursor-ide",
+    "embeddings",
+    "ai"
+  ],
+  "author": "Rom Iluz <rom@iluz.net>",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/romiluz/mongodocs-mcp.git"
+  },
+  "homepage": "https://github.com/romiluz/mongodocs-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/romiluz/mongodocs-mcp/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "@mongodocs/documentation-corpus": "file:../mongodocs-corpus",
+    "axios": "^1.6.0",
+    "boxen": "^7.1.1",
+    "chalk": "^5.3.0",
+    "cheerio": "^1.0.0-rc.12",
+    "cli-progress": "^3.12.0",
+    "cli-table3": "^0.6.5",
+    "colors": "^1.4.0",
+    "dotenv": "^16.3.1",
+    "figlet": "^1.8.0",
+    "gradient-string": "^2.0.2",
+    "inquirer": "^9.2.0",
+    "mongodb": "^6.3.0",
+    "open": "^10.0.0",
+    "ora": "^8.0.1",
+    "p-limit": "^6.2.0",
+    "simple-git": "^3.22.0",
+    "tiktoken": "^1.0.0",
+    "voyageai": "^0.0.5"
+  },
+  "devDependencies": {
+    "@types/cli-progress": "^3.11.6",
+    "@types/figlet": "^1.5.8",
+    "@types/inquirer": "^9.0.0",
+    "@types/node": "^20.11.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint": "^8.57.0",
+    "typescript": "^5.3.3"
+  },
+  "files": [
+    "dist/",
+    "bin/",
+    "README.md",
+    "LICENSE",
+    "ARCHITECTURE.md",
+    ".env.example"
+  ]
+}

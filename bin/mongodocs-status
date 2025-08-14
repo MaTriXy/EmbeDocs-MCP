@@ -1,0 +1,29 @@
+#!/usr/bin/env node
+
+// Check for help flag first
+if (process.argv.includes('--help') || process.argv.includes('-h')) {
+  console.log(`
+📊 MongoDB MCP Status Checker v7.2.3
+
+USAGE:
+  mongodocs-status             Check database and indexing status
+  mongodocs-status --help      Show this help
+
+DESCRIPTION:
+  Checks your MongoDB database for indexed documents and provides
+  detailed status information about your MCP setup.
+
+ENVIRONMENT VARIABLES:
+  MONGODB_URI              MongoDB Atlas connection string
+  MONGODB_DATABASE         Database name (default: mongodb_semantic_docs)  
+  MONGODB_COLLECTION       Collection name (default: documents)
+  VOYAGE_API_KEY          Voyage AI API key for embeddings
+`);
+  process.exit(0);
+}
+
+// Just run the status checker - it will handle env loading
+import('../dist/cli/status.js').catch(error => {
+  console.error('❌ Failed to check status:', error.message);
+  process.exit(1);
+});

@@ -1,0 +1,47 @@
+# Source files
+src/
+*.ts
+
+# Test files
+test/
+*.test.js
+test-*.js
+create-*.js
+
+# Documentation
+docs/
+*.md
+!README.md
+!LICENSE
+
+# Development files
+.env
+.env.*
+*.log
+*.pid
+indexing-state.json
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Build files
+tsconfig.json
+.eslintrc
+
+# Temporary
+tmp/
+temp/
+*.tmp
+
+# MCP specific
+mcp.json
+
+# MongoDB docs (if any get downloaded)
+mongodb-docs/
+mongodb-docs-repos/
