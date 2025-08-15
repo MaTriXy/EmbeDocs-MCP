@@ -5,6 +5,7 @@
 
 import { MongoDBClient } from './mongodb-client.js';
 import { MongoDBQueryExpander } from './mongodb-query-expander.js';
+import { RRFMerger } from './rrf-merger.js';
 import { SearchOptions, SearchResult } from '../types/index.js';
 import axios from 'axios';
 
@@ -19,6 +20,7 @@ interface ScoredDocument {
 export class HybridSearchEngine {
   private mongodb: MongoDBClient;
   private queryExpander: MongoDBQueryExpander;
+  private rrfMerger: RRFMerger;
   private voyageApiKey: string;
   private voyageContextualUrl = 'https://api.voyageai.com/v1/contextualizedembeddings';
   private readonly VOYAGE_DIMENSIONS = 2048;
@@ -33,6 +35,7 @@ export class HybridSearchEngine {
   constructor() {
     this.mongodb = MongoDBClient.getInstance();
     this.queryExpander = new MongoDBQueryExpander();
+    this.rrfMerger = new RRFMerger();
     this.voyageApiKey = process.env.VOYAGE_API_KEY!;
     if (!this.voyageApiKey) {
       throw new Error('VOYAGE_API_KEY environment variable is required');
@@ -82,7 +85,8 @@ export class HybridSearchEngine {
     console.error(`  🔢 Vector results: ${vectorResults.length}, Keyword results: ${keywordResults.length}`);
     
     // Merge and re-rank results
-    const mergedResults = this.mergeResults(vectorResults, keywordResults);
+    // RESEARCH-BASED: Use RRF for optimal merging
+    const mergedResults = this.rrfMerger.mergeResults(vectorResults, keywordResults);
     
     // Apply score threshold
     const filteredResults = mergedResults.filter(r => r.hybridScore >= this.MIN_VECTOR_SCORE);
@@ -180,15 +184,19 @@ export class HybridSearchEngine {
         const magnitude = Math.sqrt(embedding.reduce((sum, val) => sum + val * val, 0));
         const normalizedEmbedding = embedding.map(val => val / magnitude);
         
-        // RESEARCH-BASED FIX: Proper MongoDB Atlas Vector Search pipeline
+        // RESEARCH-BASED FIX: Proper MongoDB Atlas Vector Search pipeline with filtering
         const pipeline = [
           {
             $vectorSearch: {
               index: 'semantic_search',
               path: 'embedding',
               queryVector: normalizedEmbedding,
-              numCandidates: 200,  // Increased based on research
-              limit: 50  // Get more results for better hybrid search
+              numCandidates: 300,  // Further increased for better recall
+              limit: 100,  // Get even more results for filtering
+              filter: {
+                // Prioritize actual documentation over tools/code
+                product: { $in: ['manual', 'nodejs', 'pymongo', 'atlas-chatbot', 'langchain', 'terraform', 'specs', 'kafka', 'rust', 'ruby', 'motor'] }
+              }
             }
           },
           {
@@ -203,6 +211,8 @@ export class HybridSearchEngine {
               content: 1,
               metadata: 1,
               product: 1,
+              title: 1,  // Include title field
+              sourceFile: 1,  // Include source file
               searchScore: 1,
               queryUsed: 1,
               embedding: 0  // Exclude embedding from results for performance
@@ -305,8 +315,10 @@ export class HybridSearchEngine {
 
   /**
    * Merge vector and keyword results with product diversity
+   * @deprecated Using RRFMerger instead
    */
-  private mergeResults(
+  /*
+  private _mergeResults(
     vectorResults: ScoredDocument[],
     keywordResults: ScoredDocument[]
   ): ScoredDocument[] {
@@ -351,6 +363,7 @@ export class HybridSearchEngine {
     return Array.from(merged.values())
       .sort((a, b) => b.hybridScore - a.hybridScore);
   }
+  */
 
   /**
    * Re-rank results using Voyage AI reranker
@@ -516,7 +529,7 @@ export class HybridSearchEngine {
   /**
    * Calculate hybrid score combining vector and keyword scores
    */
-  private calculateHybridScore(vectorScore: number, keywordScore: number): number {
+  private _calculateHybridScore(vectorScore: number, keywordScore: number): number {
     return (vectorScore * this.VECTOR_WEIGHT) + (keywordScore * this.KEYWORD_WEIGHT);
   }
 
