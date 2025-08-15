@@ -180,20 +180,32 @@ export class HybridSearchEngine {
         const magnitude = Math.sqrt(embedding.reduce((sum, val) => sum + val * val, 0));
         const normalizedEmbedding = embedding.map(val => val / magnitude);
         
+        // RESEARCH-BASED FIX: Proper MongoDB Atlas Vector Search pipeline
         const pipeline = [
           {
             $vectorSearch: {
               index: 'semantic_search',
               path: 'embedding',
-              queryVector: normalizedEmbedding,  // USE NORMALIZED!
-              numCandidates: 150,  // Increased for better recall
-              limit: 20  // Get more candidates for re-ranking
+              queryVector: normalizedEmbedding,
+              numCandidates: 200,  // Increased based on research
+              limit: 50  // Get more results for better hybrid search
             }
           },
           {
             $addFields: {
               searchScore: { $meta: 'vectorSearchScore' },
               queryUsed: queryText
+            }
+          },
+          {
+            $project: {
+              _id: 1,
+              content: 1,
+              metadata: 1,
+              product: 1,
+              searchScore: 1,
+              queryUsed: 1,
+              embedding: 0  // Exclude embedding from results for performance
             }
           }
         ];
@@ -228,7 +240,8 @@ export class HybridSearchEngine {
   }
 
   /**
-   * Keyword search using MongoDB text search and regex
+   * RESEARCH-BASED: Enhanced keyword search with compound queries
+   * Inspired by JohnGUnderwood/atlas-hybrid-search
    */
   private async keywordSearch(
     query: string,
@@ -240,10 +253,11 @@ export class HybridSearchEngine {
     try {
       const collection = this.mongodb.getVectorsCollection();
       
-      // Build keyword search queries
+      // Build keyword search queries with boosting
       const keywordQueries = this.buildKeywordQueries(query, expandedQueries);
       
       for (const kQuery of keywordQueries) {
+        // RESEARCH-BASED: Compound text search with boosting
         const pipeline = [
           {
             $match: {
