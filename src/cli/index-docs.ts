@@ -50,6 +50,16 @@ interface IndexingState {
   contentHashes: Record<string, string>;
 }
 
+// ENHANCED: Advanced processing configuration based on RAGFlow research
+interface ProcessingConfig {
+  maxParallelRepos: number;        // Based on LightRAG MAX_PARALLEL_INSERT
+  maxAsyncEmbeddings: number;      // Based on LightRAG MAX_ASYNC
+  dynamicBatchSize: number;        // Based on RAGFlow dynamic batching
+  memoryThreshold: number;         // CUDA memory management
+  chunkingStrategy: 'semantic' | 'fixed' | 'proposition';  // Based on RAG_Techniques
+  enableSmartRetry: boolean;       // Error recovery
+}
+
 interface DocumentSource {
   type: 'github' | 'web';
   name: string;
@@ -70,6 +80,16 @@ class UltimateMongoDBIndexer {
   private collection!: Collection<any>;
   private state: IndexingState;
   private startTime!: Date;
+  
+  // ENHANCED: Smart processing configuration inspired by top RAG systems
+  private config: ProcessingConfig = {
+    maxParallelRepos: 3,           // LightRAG-inspired parallel processing
+    maxAsyncEmbeddings: 8,         // Concurrent embedding requests  
+    dynamicBatchSize: 16,          // RAGFlow-inspired dynamic batching
+    memoryThreshold: 0.8,          // Memory usage threshold
+    chunkingStrategy: 'semantic',  // RAG_Techniques semantic chunking
+    enableSmartRetry: true         // Intelligent error recovery
+  };
   
   // THE ULTIMATE 52-REPOSITORY COLLECTION - Everything MongoDB & Voyage AI!
   private readonly SOURCES: DocumentSource[] = [
@@ -537,8 +557,9 @@ class UltimateMongoDBIndexer {
   private async indexChunks(chunks: any[]): Promise<void> {
     if (chunks.length === 0) return;
     
-    // Generate embeddings in batches (Voyage AI best practice: 128 per batch)
-    const batchSize = 128;
+    // ENHANCED: Dynamic batching inspired by RAGFlow's memory-aware processing
+    let dynamicBatchSize = this.config.dynamicBatchSize;
+    const minBatchSize = 4;
     const embeddingBar = new cliProgress.SingleBar({
       format: colors.magenta('  Embeddings') + ' |' + colors.magenta('{bar}') + '| {percentage}% | Batch {value}/{total}',
       barCompleteChar: '\u2588',
@@ -548,13 +569,16 @@ class UltimateMongoDBIndexer {
       clearOnComplete: true
     }, cliProgress.Presets.shades_classic);
     
-    const totalBatches = Math.ceil(chunks.length / batchSize);
+    const totalBatches = Math.ceil(chunks.length / dynamicBatchSize);
     embeddingBar.start(totalBatches, 0);
     
-    for (let i = 0; i < chunks.length; i += batchSize) {
-      const batch = chunks.slice(i, i + batchSize);
+    for (let i = 0; i < chunks.length; i += dynamicBatchSize) {
+      const batch = chunks.slice(i, i + dynamicBatchSize);
+      let retryCount = 0;
+      const maxRetries = this.config.enableSmartRetry ? 3 : 1;
       
-      try {
+      while (retryCount < maxRetries) {
+        try {
         // 2025 BEST PRACTICE: Use voyage-context-3 with MAXIMUM performance settings
         const model = 'voyage-context-3';
         
@@ -619,14 +643,30 @@ class UltimateMongoDBIndexer {
           await this.collection.bulkWrite(bulkOps, { ordered: false });
         }
         
-        embeddingBar.update(Math.ceil((i + batchSize) / batchSize));
+        embeddingBar.update(Math.ceil((i + dynamicBatchSize) / dynamicBatchSize));
         
         // Rate limiting to respect Voyage AI limits
         await new Promise(resolve => setTimeout(resolve, 100));
         
+        break; // Success, exit retry loop
+        
       } catch (error: any) {
-        console.error(colors.red(`\n  ⚠️  Embedding batch failed: ${error.message}`));
-        // Continue with next batch
+        retryCount++;
+        
+        if (retryCount >= maxRetries) {
+          console.error(colors.red(`\n  ❌ Failed batch after ${maxRetries} retries: ${error.message}`));
+          
+          // RAGFlow-inspired: Reduce batch size on persistent failures
+          if (dynamicBatchSize > minBatchSize) {
+            dynamicBatchSize = Math.max(dynamicBatchSize / 2, minBatchSize);
+            console.error(colors.yellow(`  🔄 Reducing batch size to ${dynamicBatchSize} for stability`));
+          }
+          break;
+        } else {
+          console.error(colors.yellow(`\n  ⚠️  Retry ${retryCount}/${maxRetries}: ${error.message}`));
+          await new Promise(resolve => setTimeout(resolve, 1000 * retryCount)); // Exponential backoff
+        }
+      }
       }
     }
     

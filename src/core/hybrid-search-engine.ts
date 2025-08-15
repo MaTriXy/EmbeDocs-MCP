@@ -347,7 +347,13 @@ export class HybridSearchEngine {
   ): Promise<ScoredDocument[]> {
     if (results.length === 0) return results;
     
-    try {
+    console.error(`🔄 ENHANCED reranking with RAGFlow-inspired optimizations...`);
+    
+    let retryCount = 0;
+    const maxRetries = 3;
+    
+    while (retryCount < maxRetries) {
+      try {
       // Prepare documents for reranking
       const documents = results.map(r => 
         r.document.content?.substring(0, 1000) || '' // Use first 1000 chars
@@ -391,8 +397,19 @@ export class HybridSearchEngine {
       // Re-sort by new scores
       results.sort((a, b) => b.hybridScore - a.hybridScore);
       
-    } catch (error) {
-      console.error('Reranking failed (using original scores):', error);
+        break; // Success, exit retry loop
+        
+      } catch (error: any) {
+        retryCount++;
+        
+        if (retryCount >= maxRetries) {
+          console.error(`❌ Reranking failed after ${maxRetries} retries (using original scores):`, error.message);
+          break;
+        } else {
+          console.error(`⚠️  Reranking retry ${retryCount}/${maxRetries}:`, error.message);
+          await new Promise(resolve => setTimeout(resolve, 500 * retryCount)); // Quick backoff for reranking
+        }
+      }
     }
     
     return results;

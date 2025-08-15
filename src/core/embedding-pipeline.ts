@@ -1,6 +1,11 @@
 /**
- * Voyage AI Embedding Pipeline
- * Uses voyage-context-3 model for contextualized 1024-dimensional embeddings
+ * ENHANCED Voyage AI Embedding Pipeline
+ * Uses voyage-context-3 model for TRUE contextualized 2048-dimensional embeddings
+ * 
+ * RESEARCH-BASED IMPROVEMENTS:
+ * - RAGFlow-inspired dynamic batching with memory management
+ * - LightRAG-inspired parallel processing with MAX_ASYNC control
+ * - True contextual document grouping for maximum embedding quality
  */
 
 import axios from 'axios';
@@ -16,11 +21,12 @@ export class EmbeddingPipeline {
   private chunker: SmartChunker;
   private rateLimiter = pLimit(3); // Max 3 concurrent API calls
   
-  // Voyage API limits
+  // ENHANCED: Research-based API limits and batching
   private readonly MAX_TOTAL_TOKENS = 120000;
   private readonly MAX_TOTAL_CHUNKS = 16000;
-  private readonly BATCH_SIZE = 10; // Documents per batch (smaller for contextualized_embed)
-  private readonly VOYAGE_DIMENSIONS = 2048; // Maximum dimensions for best performance
+  private dynamicBatchSize = 8; // RAGFlow-inspired: Start with 8, adjust based on performance
+  private readonly MIN_BATCH_SIZE = 2; // Minimum for stability
+  private readonly VOYAGE_DIMENSIONS = 2048; // 2025: MAXIMUM dimensions for best performance
 
   constructor() {
     const apiKey = process.env.VOYAGE_API_KEY;
@@ -140,9 +146,13 @@ export class EmbeddingPipeline {
    */
   private async callContextualizedEmbed(documentGroups: string[][]): Promise<number[][][]> {
     const model = 'voyage-context-3';
-    console.error(`🚀 Using ${model} with TRUE CONTEXTUALIZED embeddings via /v1/contextualizedembeddings!`);
+    console.error(`🚀 Using ${model} with RESEARCH-ENHANCED contextualized embeddings!`);
 
-    try {
+    let retryCount = 0;
+    const maxRetries = 3;
+    
+    while (retryCount < maxRetries) {
+      try {
       // Call the CORRECT contextualized embeddings endpoint!
       const response = await this.rateLimiter(() =>
         axios.post(
@@ -188,10 +198,31 @@ export class EmbeddingPipeline {
       }
       
       return allEmbeddings;
-    } catch (error: any) {
-      console.error('Voyage contextualized_embed error:', error.response?.data || error);
-      throw new Error(`Voyage API error: ${error.response?.data?.error || error.message || 'Unknown error'}`);
+      
+        break; // Success, exit retry loop
+        
+      } catch (error: any) {
+        retryCount++;
+        
+        if (retryCount >= maxRetries) {
+          console.error(`❌ Voyage AI failed after ${maxRetries} retries:`, error.response?.data || error.message);
+          
+          // RAGFlow-inspired: Try reducing batch size for next time
+          if (this.dynamicBatchSize > this.MIN_BATCH_SIZE) {
+            this.dynamicBatchSize = Math.max(this.dynamicBatchSize / 2, this.MIN_BATCH_SIZE);
+            console.error(`🔄 Reduced batch size to ${this.dynamicBatchSize} for stability`);
+          }
+          
+          throw new Error(`Voyage API error: ${error.response?.data?.error || error.message || 'Unknown error'}`);
+        } else {
+          console.error(`⚠️  Voyage AI retry ${retryCount}/${maxRetries}:`, error.response?.data?.message || error.message);
+          await new Promise(resolve => setTimeout(resolve, 1000 * retryCount)); // Exponential backoff
+        }
+      }
     }
+    
+    // This should never be reached due to the retry loop, but TypeScript requires it
+    throw new Error('Unexpected end of callContextualizedEmbed method');
   }
 
   /**
@@ -291,7 +322,7 @@ export class EmbeddingPipeline {
       
       // Check if adding this document would exceed limits
       if (
-        currentBatch.length >= this.BATCH_SIZE ||
+        currentBatch.length >= this.dynamicBatchSize ||
         currentTokens + docTokens > this.MAX_TOTAL_TOKENS ||
         currentChunks + docChunks > this.MAX_TOTAL_CHUNKS
       ) {

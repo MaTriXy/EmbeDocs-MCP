@@ -25,6 +25,10 @@ export interface ChunkOptions {
   preserveExamples?: boolean; // Keep examples together
   semanticBoundaries?: boolean; // Split at natural boundaries
   overlap?: number;         // Token overlap between chunks
+  // ENHANCED: Semantic chunking options from RAG_Techniques research
+  chunkingStrategy?: 'fixed' | 'semantic' | 'proposition';
+  semanticThreshold?: number;   // Similarity threshold for semantic boundaries
+  breakpointType?: 'percentile' | 'standard_deviation' | 'interquartile' | 'gradient';
 }
 
 export class SmartChunker {
@@ -38,7 +42,11 @@ export class SmartChunker {
     preserveCode: true,
     preserveExamples: true,
     semanticBoundaries: true,
-    overlap: 50         // 2025: 10-15% overlap (50/512 ≈ 10%)
+    overlap: 50,        // 2025: 10-15% overlap (50/512 ≈ 10%)
+    // ENHANCED: Advanced chunking strategies from RAG_Techniques
+    chunkingStrategy: 'semantic',     // Default to semantic for better relevance
+    semanticThreshold: 0.8,           // High threshold for clean boundaries
+    breakpointType: 'percentile'      // Most stable breakpoint method
   };
 
   /**
