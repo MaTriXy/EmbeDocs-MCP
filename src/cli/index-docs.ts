@@ -15,7 +15,7 @@
  */
 
 import { MongoClient, Db, Collection } from 'mongodb';
-import { VoyageAIClient } from 'voyageai';
+import axios from 'axios';
 import ora, { Ora } from 'ora';
 import dotenv from 'dotenv';
 import { simpleGit } from 'simple-git';
@@ -24,7 +24,6 @@ import * as path from 'path';
 import { createHash } from 'crypto';
 import cliProgress from 'cli-progress';
 import colors from 'colors';
-import axios from 'axios';
 import * as cheerio from 'cheerio';
 import figlet from 'figlet';
 import boxen from 'boxen';
@@ -64,7 +63,9 @@ interface DocumentSource {
 
 class UltimateMongoDBIndexer {
   private mongoClient: MongoClient;
-  private voyageClient: VoyageAIClient;
+  private voyageApiKey: string;
+  private voyageContextualUrl = 'https://api.voyageai.com/v1/contextualizedembeddings';
+  private readonly VOYAGE_DIMENSIONS = 2048;
   private db!: Db;
   private collection!: Collection<any>;
   private state: IndexingState;
@@ -117,7 +118,7 @@ class UltimateMongoDBIndexer {
     { type: 'github', name: 'PyMongo', repo: 'mongodb/mongo-python-driver', branch: 'master', product: 'pymongo', version: 'latest', priority: 5 },
     { type: 'github', name: 'Node.js Driver', repo: 'mongodb/node-mongodb-native', branch: 'main', product: 'nodejs', version: 'latest', priority: 4 },
     { type: 'github', name: 'Java Driver', repo: 'mongodb/mongo-java-driver', branch: 'master', product: 'java', version: 'latest', priority: 4 },
-    { type: 'github', name: 'Go Driver', repo: 'mongodb/mongo-go-driver', branch: 'master', product: 'go', version: 'latest', priority: 4 },
+
     { type: 'github', name: 'Rust Driver', repo: 'mongodb/mongo-rust-driver', branch: 'main', product: 'rust', version: 'latest', priority: 3 },
     { type: 'github', name: 'C# Driver', repo: 'mongodb/mongo-csharp-driver', branch: 'master', product: 'csharp', version: 'latest', priority: 3 },
     { type: 'github', name: 'PHP Driver', repo: 'mongodb/mongo-php-driver', branch: 'master', product: 'php', version: 'latest', priority: 3 },
@@ -149,7 +150,7 @@ class UltimateMongoDBIndexer {
     }
     
     this.mongoClient = new MongoClient(mongoUri);
-    this.voyageClient = new VoyageAIClient({ apiKey: voyageKey });
+    this.voyageApiKey = voyageKey;
     
     this.state = {
       completedRepos: [],
@@ -170,7 +171,7 @@ class UltimateMongoDBIndexer {
       colors.green('What this tool does:\n') +
       colors.white('  • Indexes 10,000+ documents from 35+ MongoDB repos\n') +
       colors.white('  • Includes ALL drivers, tools, and integrations\n') +
-      colors.white('  • Perfect Voyage AI embeddings (voyage-3)\n') +
+      colors.white('  • Perfect Voyage AI embeddings (voyage-context-3)\n') +
       colors.white('  • Smart chunking for optimal retrieval\n') +
       colors.white('  • Incremental updates (skip unchanged files)\n\n') +
       colors.yellow.bold('⏱️  Expected time: 45-90 minutes\n') +
@@ -278,10 +279,13 @@ class UltimateMongoDBIndexer {
           const progressBar = this.createProgressBar(totalCount, 10000);
           console.log(colors.cyan(`  Total Progress: ${progressBar} ${totalCount}/10,000`));
           
-          // Check if we've reached our goal
-          if (totalCount >= 10000) {
-            console.log(colors.green.bold(`\n🎉 GOAL REACHED! Total documents: ${totalCount.toLocaleString()}`));
-            break;
+          // Show milestone markers
+          if (totalCount >= 10000 && totalCount < 10100) {
+            console.log(colors.green.bold(`\n🎯 MILESTONE: ${totalCount.toLocaleString()} documents! Continuing for complete coverage...`));
+          } else if (totalCount >= 25000 && totalCount < 25100) {
+            console.log(colors.green.bold(`\n🔥 MILESTONE: ${totalCount.toLocaleString()} documents! Amazing progress!`));
+          } else if (totalCount >= 50000 && totalCount < 50100) {
+            console.log(colors.green.bold(`\n💎 MILESTONE: ${totalCount.toLocaleString()} documents! Ultimate coverage!`));
           }
           
         } catch (error) {
@@ -551,37 +555,49 @@ class UltimateMongoDBIndexer {
       const batch = chunks.slice(i, i + batchSize);
       
       try {
-        // SMART MODEL SELECTION: Detect code content for voyage-code-3
-        const hasCode = batch.some(chunk => this.isCodeContent(chunk.content));
-        const model = hasCode ? 'voyage-code-3' : 'voyage-3';
+        // 2025 BEST PRACTICE: Use voyage-context-3 with MAXIMUM performance settings
+        const model = 'voyage-context-3';
         
-        // Adjust for voyage-code-3's lower token limit (120K vs 320K)
-        const maxLength = model === 'voyage-code-3' ? 4000 : 8000;
+        // Group chunks for TRUE contextualized embeddings
+        // For the indexer, we'll process in smaller batches but with context
+        const maxLength = 8000;
         const texts = batch.map(c => c.content.substring(0, maxLength));
         
-        // Further reduce batch size for voyage-code-3 if needed
-        const actualBatch = model === 'voyage-code-3' && batch.length > 64 ? 
-          batch.slice(0, 64) : batch;
-        const actualTexts = model === 'voyage-code-3' && texts.length > 64 ? 
-          texts.slice(0, 64) : texts;
+        // Process batch with appropriate size
+        const actualBatch = batch.length > 32 ? 
+          batch.slice(0, 32) : batch;
+        const actualTexts = texts.length > 32 ? 
+          texts.slice(0, 32) : texts;
         
-        // CRITICAL: Use input_type="document" for indexing
-        const response = await this.voyageClient.embed({
-          input: actualTexts,
-          model,
-          inputType: 'document' // THIS IS CRUCIAL FOR QUALITY
-        });
+        // CRITICAL: Use TRUE contextualized embeddings with 2048 dimensions!
+        const response = await axios.post(
+          this.voyageContextualUrl,
+          {
+            inputs: [actualTexts], // Group chunks for contextualized embedding
+            input_type: 'document', // THIS IS CRUCIAL FOR QUALITY
+            model,
+            output_dimension: this.VOYAGE_DIMENSIONS
+          },
+          {
+            headers: {
+              'Authorization': `Bearer ${this.voyageApiKey}`,
+              'Content-Type': 'application/json',
+            },
+            timeout: 60000,
+          }
+        );
         
-        if (response.data) {
+        if (response.data?.data?.[0]?.data) {
+          const embeddings = response.data.data[0].data;
           actualBatch.forEach((chunk, idx) => {
-            const embedding = response.data![idx].embedding;
+            const embedding = embeddings[idx]?.embedding;
             if (embedding) {
               // NORMALIZE the embedding for cosine similarity
               const magnitude = Math.sqrt(
-                embedding.reduce((sum, val) => sum + val * val, 0)
+                embedding.reduce((sum: number, val: number) => sum + val * val, 0)
               );
-              chunk.embedding = embedding.map(val => val / magnitude);
-              chunk.embeddingModel = model; // Track which model was used (voyage-3 or voyage-code-3)
+              chunk.embedding = embedding.map((val: number) => val / magnitude);
+              chunk.embeddingModel = model; // Track which model was used (voyage-context-3)
               chunk.embeddingDimensions = embedding.length;
               chunk.indexedAt = new Date();
             }
@@ -617,39 +633,7 @@ class UltimateMongoDBIndexer {
     embeddingBar.stop();
   }
 
-  /**
-   * Detect if content contains significant code
-   */
-  private isCodeContent(content: string): boolean {
-    // Code indicators
-    const codeIndicators = [
-      /```[\w]*\n/,          // Code blocks
-      /.. code-block::/,     // RST code blocks
-      /db\.\w+\.\w+\(/,      // MongoDB commands
-      /\$\w+\s*:/,           // MongoDB operators
-      /function\s*\(/,       // JavaScript functions
-      /def\s+\w+\(/,         // Python functions
-      /class\s+\w+/,         // Classes
-      /import\s+/,           // Import statements
-      /const\s+\w+\s*=/,     // Const declarations
-      /let\s+\w+\s*=/,       // Let declarations
-      /async\s+function/,    // Async functions
-      /=>\s*{/,              // Arrow functions
-      /\(\)\s*{/,            // Function expressions
-      /interface\s+\w+/,     // TypeScript interfaces
-      /type\s+\w+\s*=/,      // Type aliases
-      /createIndex\(/,       // MongoDB index creation
-      /aggregate\(\[/,       // MongoDB aggregation
-      /find\({/,             // MongoDB queries
-      /\$vectorSearch/,      // Vector search
-    ];
-    
-    // Count matches
-    const matches = codeIndicators.filter(pattern => pattern.test(content)).length;
-    
-    // Consider it code if 3+ indicators match
-    return matches >= 3;
-  }
+
 
   /**
    * Clone or update repository
@@ -740,6 +724,8 @@ class UltimateMongoDBIndexer {
     const elapsed = Math.round((Date.now() - this.startTime.getTime()) / 1000 / 60);
     
     // Get model distribution
+    const voyageContext3Count = await this.collection.countDocuments({ embeddingModel: 'voyage-context-3' });
+    // Legacy model counts (for backwards compatibility)
     const voyage3Count = await this.collection.countDocuments({ embeddingModel: 'voyage-3' });
     const voyageCode3Count = await this.collection.countDocuments({ embeddingModel: 'voyage-code-3' });
     
@@ -758,8 +744,9 @@ class UltimateMongoDBIndexer {
       ['Total Documents', colors.green.bold(totalDocs.toLocaleString())],
       ['Sources Processed', colors.green(`${this.state.completedRepos.length}/${this.SOURCES.length}`)],
       ['Products Indexed', colors.cyan(products.length.toString())],
-      ['voyage-3 (text) Documents', colors.blue(voyage3Count.toLocaleString())],
-      ['voyage-code-3 (code) Documents', colors.magenta(voyageCode3Count.toLocaleString())],
+      ['voyage-context-3 (2025) Documents', colors.green.bold(voyageContext3Count.toLocaleString())],
+      ['voyage-3 (legacy) Documents', colors.blue(voyage3Count.toLocaleString())],
+      ['voyage-code-3 (legacy) Documents', colors.magenta(voyageCode3Count.toLocaleString())],
       ['Failed Files', colors.yellow(this.state.failedFiles.length.toString())],
       ['Time Elapsed', colors.magenta(`${elapsed} minutes`)],
       ['Documents per Minute', colors.blue(Math.round(totalDocs / elapsed).toLocaleString())]
@@ -828,7 +815,7 @@ if (isMainModule) {
   // Only set fallbacks if environment variables are completely missing
   if (!process.env.MONGODB_URI) {
     console.log(colors.yellow('⚠️  MONGODB_URI not found in .env, using fallback'));
-    process.env.MONGODB_URI = "mongodb+srv://romiluz:05101994@memorybank.fq8rsy.mongodb.net/?retryWrites=true&w=majority&appName=memorybank";
+    process.env.MONGODB_URI = "mongodb+srv://romiluz:05101994@mongodocs.gdssyqd.mongodb.net/?retryWrites=true&w=majority&appName=mongodocs";
   }
 
   if (!process.env.VOYAGE_API_KEY) {

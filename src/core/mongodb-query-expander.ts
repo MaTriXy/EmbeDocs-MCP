@@ -73,6 +73,13 @@ export class MongoDBQueryExpander {
     const queryLower = query.toLowerCase();
     const words = queryLower.split(/\s+/);
     
+    // 🧠 MONGODB INTELLIGENCE: Detect patterns first
+    const mongoPatterns = this.detectMongoDBPatterns(queryLower);
+    console.error(`🧠 Query patterns: [${mongoPatterns.join(', ')}]`);
+    
+    // 🎯 Add pattern-specific expansions
+    this.addPatternBasedExpansions(query, mongoPatterns, expanded);
+    
     // 1. Check for exact MongoDB terms
     for (const word of words) {
       // Check if it's an aggregation stage
@@ -167,6 +174,12 @@ export class MongoDBQueryExpander {
       expanded.add(`${query} migration`);
     }
     
+    // Add programming language specific terms
+    this.addProgrammingLanguageTerms(query, expanded);
+    
+    // Add API and method specific terms  
+    this.addAPITerms(query, expanded);
+    
     // Limit to top 10 most relevant expansions
     return Array.from(expanded).slice(0, 10);
   }
@@ -227,5 +240,148 @@ export class MongoDBQueryExpander {
     }
     
     return suggestions;
+  }
+
+  /**
+   * Add programming language specific terms
+   */
+  private addProgrammingLanguageTerms(query: string, expanded: Set<string>): void {
+    const queryLower = query.toLowerCase();
+    
+    // Node.js specific
+    if (queryLower.includes('node') || queryLower.includes('javascript') || queryLower.includes('js')) {
+      expanded.add(`${query} node.js driver`);
+      expanded.add(`${query} mongoose`);
+      expanded.add(`${query} async await`);
+      expanded.add(`${query} callback`);
+    }
+    
+    // Python specific
+    if (queryLower.includes('python') || queryLower.includes('py')) {
+      expanded.add(`${query} pymongo`);
+      expanded.add(`${query} motor async`);
+      expanded.add(`${query} mongoengine`);
+    }
+    
+    // Java specific
+    if (queryLower.includes('java')) {
+      expanded.add(`${query} java driver`);
+      expanded.add(`${query} spring data`);
+      expanded.add(`${query} morphia`);
+    }
+    
+    // C# specific
+    if (queryLower.includes('c#') || queryLower.includes('csharp') || queryLower.includes('.net')) {
+      expanded.add(`${query} c# driver`);
+      expanded.add(`${query} .net`);
+      expanded.add(`${query} entity framework`);
+    }
+  }
+
+  /**
+   * Add API and method specific terms
+   */
+  private addAPITerms(query: string, expanded: Set<string>): void {
+    const queryLower = query.toLowerCase();
+    
+    // Vector search specific
+    if (queryLower.includes('vector') || queryLower.includes('embedding') || queryLower.includes('semantic')) {
+      expanded.add(`${query} $vectorSearch`);
+      expanded.add(`${query} createSearchIndex`);
+      expanded.add(`${query} cosine similarity`);
+      expanded.add(`${query} numDimensions`);
+      expanded.add(`${query} Atlas Vector Search`);
+    }
+    
+    // Aggregation specific
+    if (queryLower.includes('aggregate') || queryLower.includes('pipeline')) {
+      expanded.add(`${query} $match $group $sort`);
+      expanded.add(`${query} $lookup $unwind`);
+      expanded.add(`${query} $project $limit`);
+    }
+    
+    // Index specific
+    if (queryLower.includes('index') || queryLower.includes('performance')) {
+      expanded.add(`${query} createIndex`);
+      expanded.add(`${query} compound index`);
+      expanded.add(`${query} explain executionStats`);
+      expanded.add(`${query} hint optimization`);
+    }
+    
+    // Authentication specific
+    if (queryLower.includes('auth') || queryLower.includes('login') || queryLower.includes('connect')) {
+      expanded.add(`${query} connection string`);
+      expanded.add(`${query} mongodb+srv`);
+      expanded.add(`${query} authentication mechanisms`);
+      expanded.add(`${query} username password`);
+    }
+  }
+
+  /**
+   * Detect MongoDB-specific patterns (CRUSHING Octocode with intelligence!)
+   */
+  private detectMongoDBPatterns(query: string): string[] {
+    const patterns = [];
+    
+    // CRUD patterns
+    if (/insert|create|add|save/.test(query)) patterns.push('crud-insert');
+    if (/find|query|search|get|fetch/.test(query)) patterns.push('crud-read');
+    if (/update|modify|change|set/.test(query)) patterns.push('crud-update');
+    if (/delete|remove|drop/.test(query)) patterns.push('crud-delete');
+    
+    // Advanced MongoDB patterns
+    if (/aggregate|pipeline|\$match|\$group/.test(query)) patterns.push('aggregation');
+    if (/vector|embedding|similarity|semantic/.test(query)) patterns.push('vector-search');
+    if (/index|performance|optimize|slow/.test(query)) patterns.push('performance');
+    if (/error|problem|fix|troubleshoot/.test(query)) patterns.push('troubleshooting');
+    if (/replica|shard|cluster|scale/.test(query)) patterns.push('scaling');
+    if (/transaction|acid|session/.test(query)) patterns.push('transactions');
+    if (/schema|model|design|validation/.test(query)) patterns.push('data-modeling');
+    
+    // Driver patterns
+    if (/node|javascript|mongoose/.test(query)) patterns.push('nodejs');
+    if (/python|pymongo|motor/.test(query)) patterns.push('python');
+    if (/java|spring/.test(query)) patterns.push('java');
+    
+    return patterns;
+  }
+
+  /**
+   * Add expansions based on detected patterns
+   */
+  private addPatternBasedExpansions(originalQuery: string, patterns: string[], expanded: Set<string>): void {
+    patterns.forEach(pattern => {
+      switch (pattern) {
+        case 'crud-insert':
+          ['insertOne', 'insertMany', 'create document', 'add record', 'bulk insert'].forEach(term => {
+            expanded.add(`${originalQuery} ${term}`);
+          });
+          break;
+          
+        case 'crud-read':
+          ['find', 'findOne', 'findMany', 'query documents', 'search collection'].forEach(term => {
+            expanded.add(`${originalQuery} ${term}`);
+          });
+          break;
+          
+        case 'aggregation':
+          ['aggregation pipeline', '$match stage', '$group operator', 'pipeline stages'].forEach(term => {
+            expanded.add(`${originalQuery} ${term}`);
+          });
+          break;
+          
+        case 'vector-search':
+          ['$vectorSearch', 'Atlas Vector Search', 'semantic search', 'similarity search', 'vector index'].forEach(term => {
+            expanded.add(`${originalQuery} ${term}`);
+          });
+          break;
+          
+        case 'performance':
+          ['explain plan', 'execution stats', 'index optimization', 'query performance', 'slow query log'].forEach(term => {
+            expanded.add(`${originalQuery} ${term}`);
+          });
+          break;
+      }
+    });
   }
 }

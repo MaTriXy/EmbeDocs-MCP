@@ -122,7 +122,7 @@ export class MongoDBClient {
             {
               type: 'vector',
               path: 'embedding',
-              numDimensions: 1024,
+              numDimensions: 2048, // DOUBLED for maximum performance!
               similarity: 'cosine',
             },
           ],

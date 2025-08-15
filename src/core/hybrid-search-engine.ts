@@ -6,7 +6,7 @@
 import { MongoDBClient } from './mongodb-client.js';
 import { MongoDBQueryExpander } from './mongodb-query-expander.js';
 import { SearchOptions, SearchResult } from '../types/index.js';
-import { VoyageAIClient } from 'voyageai';
+import axios from 'axios';
 
 interface ScoredDocument {
   document: any;
@@ -19,7 +19,9 @@ interface ScoredDocument {
 export class HybridSearchEngine {
   private mongodb: MongoDBClient;
   private queryExpander: MongoDBQueryExpander;
-  private voyageClient: VoyageAIClient;
+  private voyageApiKey: string;
+  private voyageContextualUrl = 'https://api.voyageai.com/v1/contextualizedembeddings';
+  private readonly VOYAGE_DIMENSIONS = 2048;
   private initialized = false;
   
   // Scoring thresholds
@@ -31,9 +33,10 @@ export class HybridSearchEngine {
   constructor() {
     this.mongodb = MongoDBClient.getInstance();
     this.queryExpander = new MongoDBQueryExpander();
-    this.voyageClient = new VoyageAIClient({
-      apiKey: process.env.VOYAGE_API_KEY!
-    });
+    this.voyageApiKey = process.env.VOYAGE_API_KEY!;
+    if (!this.voyageApiKey) {
+      throw new Error('VOYAGE_API_KEY environment variable is required');
+    }
   }
 
   async initialize(): Promise<void> {
@@ -50,21 +53,25 @@ export class HybridSearchEngine {
    * Perform hybrid search combining vector and keyword strategies
    */
   async search(query: string, options: SearchOptions = {}): Promise<SearchResult[]> {
-    console.error(`🔍 Hybrid Search for: "${query}"`);
+    console.error(`🚀 MONGODB-OPTIMIZED Search: "${query}"`);
     
     const collection = this.mongodb.getVectorsCollection();
     const count = await collection.countDocuments();
     
     if (count === 0) {
-      console.error('⚠️ No documents in database. Run mega-refresh first!');
+      console.error('⚠️ No documents in database. Run indexer first!');
       return [];
     }
     
-    console.error(`  📊 Searching ${count} documents...`);
+    console.error(`📊 Searching ${count} docs with MongoDB intelligence...`);
     
-    // Expand query for better coverage
+    // 🧠 MongoDB-specific query understanding
+    const mongoIntent = this.detectMongoDBIntent(query);
+    console.error(`🧠 Intent: ${mongoIntent.type} (${mongoIntent.confidence.toFixed(2)} confidence)`);
+    
+    // 🔍 Enhanced query expansion with MongoDB context
     const expandedQueries = this.queryExpander.expandQuery(query);
-    console.error(`  📝 Expanded to ${expandedQueries.length} query variations`);
+    console.error(`🔍 Expanded to ${expandedQueries.length} MongoDB-aware variations`);
     
     // Run both search strategies in parallel
     const [vectorResults, keywordResults] = await Promise.all([
@@ -98,6 +105,57 @@ export class HybridSearchEngine {
   }
 
   /**
+   * MongoDB-specific intent detection (our SECRET WEAPON!)
+   */
+  private detectMongoDBIntent(query: string): { type: string; confidence: number; components: string[]; language?: string } {
+    const queryLower = query.toLowerCase();
+    
+    // MongoDB operation patterns
+    const patterns = {
+      crud: ['insert', 'find', 'update', 'delete', 'replace', 'upsert', 'insertone', 'updateone'],
+      aggregation: ['aggregate', 'pipeline', '$match', '$group', '$project', '$sort', '$lookup', '$unwind'],
+      vectorSearch: ['vector search', '$vectorsearch', 'embedding', 'similarity', 'cosine', 'semantic'],
+      indexing: ['index', 'createindex', 'compound', 'text index', 'performance'],
+      troubleshooting: ['error', 'problem', 'fix', 'timeout', 'connection', 'slow'],
+      drivers: {
+        nodejs: ['node', 'javascript', 'mongoose', 'async', 'await'],
+        python: ['python', 'pymongo', 'motor'],
+        java: ['java', 'spring'],
+        csharp: ['c#', '.net'],
+        go: ['golang', 'go'],
+        php: ['php', 'laravel'],
+        ruby: ['ruby']
+      }
+    };
+    
+    let intent = { type: 'general', confidence: 0.5, components: [] as string[], language: undefined as string | undefined };
+    
+    // Detect primary intent
+    if (patterns.vectorSearch.some(p => queryLower.includes(p))) {
+      intent = { type: 'vector_search', confidence: 0.9, components: ['vector-search'], language: undefined };
+    } else if (patterns.aggregation.some(p => queryLower.includes(p))) {
+      intent = { type: 'aggregation', confidence: 0.8, components: ['aggregation'], language: undefined };
+    } else if (patterns.crud.some(p => queryLower.includes(p))) {
+      intent = { type: 'crud', confidence: 0.8, components: ['crud'], language: undefined };
+    } else if (patterns.indexing.some(p => queryLower.includes(p))) {
+      intent = { type: 'indexing', confidence: 0.7, components: ['indexing'], language: undefined };
+    } else if (patterns.troubleshooting.some(p => queryLower.includes(p))) {
+      intent = { type: 'troubleshooting', confidence: 0.7, components: ['troubleshooting'], language: undefined };
+    }
+    
+    // Detect programming language
+    for (const [lang, indicators] of Object.entries(patterns.drivers)) {
+      if (indicators.some(indicator => queryLower.includes(indicator))) {
+        intent.language = lang;
+        intent.confidence += 0.1;
+        break;
+      }
+    }
+    
+    return intent;
+  }
+
+  /**
    * Vector search using embeddings
    */
   private async vectorSearch(
@@ -125,7 +183,7 @@ export class HybridSearchEngine {
         const pipeline = [
           {
             $vectorSearch: {
-              index: 'vector_index',
+              index: 'semantic_search',
               path: 'embedding',
               queryVector: normalizedEmbedding,  // USE NORMALIZED!
               numCandidates: 150,  // Increased for better recall
@@ -147,12 +205,17 @@ export class HybridSearchEngine {
         
         const docs = await collection.aggregate(pipeline).toArray();
         
-        docs.forEach(doc => {
+        docs.forEach((doc, index) => {
+          // CRITICAL FIX: Normalize vector scores and add diversity penalty
+          const baseScore = doc.searchScore || 0;
+          const diversityPenalty = index * 0.01; // Slight penalty for lower-ranked results
+          const normalizedScore = Math.max(0, Math.min(1, baseScore - diversityPenalty));
+          
           results.push({
             document: doc,
-            vectorScore: doc.searchScore || 0,
+            vectorScore: normalizedScore,
             keywordScore: 0,
-            hybridScore: doc.searchScore || 0,
+            hybridScore: normalizedScore,
             source: 'vector'
           });
         });
@@ -227,17 +290,27 @@ export class HybridSearchEngine {
   }
 
   /**
-   * Merge vector and keyword results
+   * Merge vector and keyword results with product diversity
    */
   private mergeResults(
     vectorResults: ScoredDocument[],
     keywordResults: ScoredDocument[]
   ): ScoredDocument[] {
     const merged = new Map<string, ScoredDocument>();
+    const productCounts = new Map<string, number>();
     
-    // Add vector results
+    // Add vector results with product diversity tracking
     vectorResults.forEach(result => {
       const id = result.document._id.toString();
+      const product = result.document.product || 'unknown';
+      
+      // Apply diversity boost for underrepresented products
+      const currentCount = productCounts.get(product) || 0;
+      const diversityBoost = Math.max(0, (5 - currentCount) * 0.05); // Boost less common products
+      
+      result.hybridScore += diversityBoost;
+      productCounts.set(product, currentCount + 1);
+      
       merged.set(id, result);
     });
     
@@ -280,22 +353,37 @@ export class HybridSearchEngine {
         r.document.content?.substring(0, 1000) || '' // Use first 1000 chars
       );
       
-      // Call Voyage reranker
-      const response = await this.voyageClient.rerank({
-        query,
-        documents,
-        model: 'rerank-2',
-        topK: Math.min(results.length, 20)
-      });
+      // Call Voyage reranker with latest 2025 model
+      const response = await axios.post(
+        'https://api.voyageai.com/v1/rerank',
+        {
+          query,
+          documents,
+          model: 'rerank-2.5', // 2025: Latest cross-encoder model
+          top_k: Math.min(results.length, 20)
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${this.voyageApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          timeout: 30000,
+        }
+      );
       
       // Update scores based on reranking
-      if (response.data) {
-        response.data.forEach((item: any) => {
-          // CRITICAL FIX: Voyage API returns 'relevanceScore' not 'relevance_score'!
-          const score = item.relevanceScore;
-          if (item.index < results.length && score !== undefined) {
-            results[item.index].hybridScore = 
-              (results[item.index].hybridScore + score) / 2;
+      if (response.data?.data) {
+        response.data.data.forEach((item: any, index: number) => {
+          // CRITICAL FIX: Voyage API returns nested structure with relevanceScore
+          const score = item.relevanceScore || item.score;
+          const resultIndex = item.index !== undefined ? item.index : index;
+          
+          if (resultIndex < results.length && score !== undefined) {
+            // Use reranking score as primary, with original as fallback
+            const rerankWeight = 0.7;
+            const originalWeight = 0.3;
+            results[resultIndex].hybridScore = 
+              (score * rerankWeight) + (results[resultIndex].hybridScore * originalWeight);
           }
         });
       }
@@ -315,17 +403,46 @@ export class HybridSearchEngine {
    */
   private async generateQueryEmbeddings(queries: string[]): Promise<number[][]> {
     try {
-      const response = await this.voyageClient.embed({
-        input: queries,
-        model: 'voyage-3',
-        inputType: 'query'
-      });
+      // Use the contextualized embeddings endpoint for queries
+      const response = await axios.post(
+        this.voyageContextualUrl,
+        {
+          inputs: queries.map(q => [q]), // Each query wrapped in array
+          input_type: 'query', // Critical: asymmetric embeddings for query-document matching
+          model: 'voyage-context-3',
+          output_dimension: this.VOYAGE_DIMENSIONS
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${this.voyageApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          timeout: 30000,
+        }
+      );
       
-      const embeddings = response.data?.map(d => d.embedding) || [];
-      // Ensure we always return number[][], filtering out undefined
-      return embeddings.filter((e): e is number[] => e !== undefined);
-    } catch (error) {
-      console.error('Embedding generation failed:', error);
+      if (!response.data?.data) {
+        console.error('No data returned from Voyage API');
+        return [];
+      }
+      
+      // Extract and normalize embeddings
+      const normalizedEmbeddings: number[][] = [];
+      
+      for (const queryResult of response.data.data) {
+        if (queryResult?.data?.[0]?.embedding) {
+          const embedding = queryResult.data[0].embedding;
+          const magnitude = Math.sqrt(
+            embedding.reduce((sum: number, val: number) => sum + val * val, 0)
+          );
+          const normalized = embedding.map((v: number) => v / magnitude);
+          normalizedEmbeddings.push(normalized);
+        }
+      }
+      
+      return normalizedEmbeddings;
+    } catch (error: any) {
+      console.error('Embedding generation failed:', error.response?.data || error);
       return [];
     }
   }
@@ -373,7 +490,7 @@ export class HybridSearchEngine {
   }
 
   /**
-   * Format results for output
+   * Format results for output with "Lost in the Middle" mitigation (2025 best practice)
    */
   private formatResults(results: ScoredDocument[], limit: number): SearchResult[] {
     const formatted: SearchResult[] = [];
@@ -393,11 +510,16 @@ export class HybridSearchEngine {
           content: r.document.content,
           score: r.hybridScore,
           metadata: r.document.metadata
-        }));
+        }))
+        .sort((a, b) => b.score - a.score); // Sort by score
+      
+      // 2025: Apply "Lost in the Middle" mitigation
+      // Place most relevant chunks at beginning and end
+      const reorderedChunks = this.reorderChunksForLLM(relatedChunks);
       
       formatted.push({
         documentId: docId,
-        chunks: relatedChunks.slice(0, 3).map((chunk, idx) => ({
+        chunks: reorderedChunks.slice(0, 3).map((chunk, idx) => ({
           ...chunk,
           chunkIndex: idx
         })) as any, // Top 3 chunks with index
@@ -408,6 +530,36 @@ export class HybridSearchEngine {
     }
     
     return formatted;
+  }
+
+  /**
+   * Reorder chunks to mitigate "Lost in the Middle" problem (2025 best practice)
+   * LLMs have U-shaped attention - best recall at beginning and end
+   */
+  private reorderChunksForLLM(chunks: any[]): any[] {
+    if (chunks.length <= 2) return chunks;
+    
+    const reordered: any[] = [];
+    const sorted = [...chunks].sort((a, b) => b.score - a.score);
+    
+    // Place most relevant at beginning
+    reordered.push(sorted[0]);
+    
+    // Place second most relevant at end
+    if (sorted.length > 1) {
+      const secondBest = sorted[1];
+      sorted.splice(1, 1);
+      
+      // Fill middle with remaining chunks
+      for (let i = 2; i < sorted.length; i++) {
+        reordered.push(sorted[i]);
+      }
+      
+      // Add second best at the end
+      reordered.push(secondBest);
+    }
+    
+    return reordered;
   }
 
   /**
@@ -486,8 +638,8 @@ export class HybridSearchEngine {
       products,
       versions,
       searchEngine: 'Hybrid (Vector + Keyword)',
-      vectorModel: 'voyage-3',
-      rerankerModel: 'rerank-2',
+      vectorModel: 'voyage-context-3',
+      rerankerModel: 'rerank-2.5',
       minVectorScore: this.MIN_VECTOR_SCORE,
       minKeywordScore: this.MIN_KEYWORD_SCORE,
       weights: {

@@ -53,7 +53,7 @@ export interface VectorDocument {
   content: string;
   contentHash: string;
   embedding: number[];
-  embeddingModel: 'voyage-3';
+  embeddingModel: 'voyage-3' | 'voyage-context-3' | 'voyage-code-3';
   embeddedAt: Date;
   metadata: {
     documentId: string;

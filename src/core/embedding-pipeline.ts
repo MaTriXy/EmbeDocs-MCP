@@ -1,39 +1,26 @@
 /**
  * Voyage AI Embedding Pipeline
- * Uses voyage-3 model for high-quality 1024-dimensional embeddings
+ * Uses voyage-context-3 model for contextualized 1024-dimensional embeddings
  */
 
 import axios from 'axios';
 import { ChunkedDocument, VectorDocument, EmbeddingBatch } from '../types/index.js';
 import { MongoDBClient } from './mongodb-client.js';
-import { DocumentChunker } from './document-chunker.js';
+import { SmartChunker } from './smart-chunker.js';
 import pLimit from 'p-limit';
-
-interface VoyageResponse {
-  object: string;
-  data: Array<{
-    object: string;
-    embedding: number[];
-    index: number;
-  }>;
-  model: string;
-  usage: {
-    total_tokens: number;
-  };
-}
 
 export class EmbeddingPipeline {
   private voyageApiKey: string;
-  private voyageApiUrl = 'https://api.voyageai.com/v1/embeddings';
+  private voyageContextualUrl = 'https://api.voyageai.com/v1/contextualizedembeddings';
   private mongodb: MongoDBClient;
-  private chunker: DocumentChunker;
+  private chunker: SmartChunker;
   private rateLimiter = pLimit(3); // Max 3 concurrent API calls
   
   // Voyage API limits
-  // private readonly MAX_INPUTS = 1000; // Not currently used
   private readonly MAX_TOTAL_TOKENS = 120000;
   private readonly MAX_TOTAL_CHUNKS = 16000;
-  private readonly BATCH_SIZE = 50; // Documents per batch
+  private readonly BATCH_SIZE = 10; // Documents per batch (smaller for contextualized_embed)
+  private readonly VOYAGE_DIMENSIONS = 2048; // Maximum dimensions for best performance
 
   constructor() {
     const apiKey = process.env.VOYAGE_API_KEY;
@@ -42,7 +29,7 @@ export class EmbeddingPipeline {
     }
     this.voyageApiKey = apiKey;
     this.mongodb = MongoDBClient.getInstance();
-    this.chunker = new DocumentChunker();
+    this.chunker = new SmartChunker();
   }
 
   /**
@@ -85,19 +72,21 @@ export class EmbeddingPipeline {
   }
 
   /**
-   * Process a batch of documents with embeddings
-   * Using voyage-3 model for high-quality 1024-dimensional embeddings
+   * Process a batch of documents with TRUE contextualized embeddings
+   * Each document's chunks are embedded together for global context awareness
    */
   private async processBatch(batch: EmbeddingBatch): Promise<{ embeddings: VectorDocument[]; tokensUsed: number }> {
-    // Prepare input for Voyage API - flatten all chunks into single array
-    const inputs: string[] = [];
-    const metadataMap: any[] = [];
+    // CRITICAL: Group chunks by document for contextualized_embed
+    const documentGroups: string[][] = [];
+    const metadataGroups: any[][] = [];
     
     for (const doc of batch.documents) {
-      // Add each chunk as a separate input
+      const docChunks: string[] = [];
+      const docMetadata: any[] = [];
+      
       doc.chunks.forEach((chunk, idx) => {
-        inputs.push(chunk.content);
-        metadataMap.push({
+        docChunks.push(chunk.content);
+        docMetadata.push({
           documentId: doc.documentId,
           chunkIndex: idx,
           totalChunks: doc.totalChunks,
@@ -105,70 +94,103 @@ export class EmbeddingPipeline {
           ...chunk.metadata,
         });
       });
+      
+      documentGroups.push(docChunks);
+      metadataGroups.push(docMetadata);
     }
     
-    // Call Voyage API with flattened inputs
-    const response = await this.callVoyageAPI(inputs, metadataMap);
+    // Call Voyage API with CONTEXTUALIZED embeddings
+    const embeddings = await this.callContextualizedEmbed(documentGroups);
+    
+    // Flatten embeddings and metadata for MongoDB
+    const flatEmbeddings: number[][] = [];
+    const flatMetadata: any[] = [];
+    
+    embeddings.forEach((docEmbeddings, docIdx) => {
+      docEmbeddings.forEach((embedding, chunkIdx) => {
+        flatEmbeddings.push(embedding);
+        flatMetadata.push(metadataGroups[docIdx][chunkIdx]);
+      });
+    });
     
     // Prepare documents for MongoDB
     const vectorDocuments = this.prepareVectorDocuments(
-      response.data.map(d => d.embedding),
+      flatEmbeddings,
       batch,
-      metadataMap
+      flatMetadata
     );
     
     // Insert into MongoDB
     await this.insertToMongoDB(vectorDocuments);
     
+    // Estimate token usage (approximate)
+    const totalTokens = documentGroups.reduce((sum, doc) => 
+      sum + doc.reduce((docSum, chunk) => docSum + chunk.length / 4, 0), 0
+    );
+    
     return {
       embeddings: vectorDocuments,
-      tokensUsed: response.usage.total_tokens,
+      tokensUsed: Math.round(totalTokens),
     };
   }
 
   /**
-   * Call Voyage API for embeddings with optimized model selection
-   * Uses voyage-code-3 for technical content, voyage-3 for general content
+   * Call Voyage API with TRUE contextualized embeddings - USING THE CORRECT ENDPOINT!
+   * This is the GAME CHANGER - chunks are embedded with full document context!
    */
-  private async callVoyageAPI(inputs: string[], metadataMap: any[]): Promise<VoyageResponse> {
-    // Determine optimal model based on content type
-    const technicalCount = metadataMap.filter(m => m.contentType === 'technical').length;
-    const totalCount = metadataMap.length;
-    const technicalRatio = technicalCount / totalCount;
-
-    // Use voyage-code-3 if majority is technical content
-    const model = technicalRatio > 0.5 ? 'voyage-code-3' : 'voyage-3';
-
-    console.error(`🤖 Using ${model} for batch (${technicalCount}/${totalCount} technical chunks)`);
+  private async callContextualizedEmbed(documentGroups: string[][]): Promise<number[][][]> {
+    const model = 'voyage-context-3';
+    console.error(`🚀 Using ${model} with TRUE CONTEXTUALIZED embeddings via /v1/contextualizedembeddings!`);
 
     try {
+      // Call the CORRECT contextualized embeddings endpoint!
       const response = await this.rateLimiter(() =>
         axios.post(
-          this.voyageApiUrl,
+          this.voyageContextualUrl,
           {
-            input: inputs,
-            model,
+            inputs: documentGroups, // Array of arrays - each sub-array is a document's chunks
             input_type: 'document',
-            output_dimension: 1024,
-            output_dtype: 'float',
+            model: model,
+            output_dimension: this.VOYAGE_DIMENSIONS
           },
           {
             headers: {
               'Authorization': `Bearer ${this.voyageApiKey}`,
               'Content-Type': 'application/json',
             },
-            timeout: 30000,
+            timeout: 60000, // Longer timeout for contextualized embeddings
           }
         )
       );
       
-      return response.data;
-    } catch (error: any) {
-      if (error.response) {
-        console.error('Voyage API error:', error.response.data);
-        throw new Error(`Voyage API error: ${error.response.data.error?.message || 'Unknown error'}`);
+      if (!response.data?.data) {
+        throw new Error('No data returned from Voyage contextualized API');
       }
-      throw error;
+      
+      // Extract embeddings - the response structure is:
+      // data: [ { data: [ { embedding: [...] }, { embedding: [...] } ] }, ... ]
+      const allEmbeddings: number[][][] = [];
+      
+      for (const docResult of response.data.data) {
+        const docEmbeddings: number[][] = [];
+        for (const chunk of docResult.data) {
+          if (chunk?.embedding) {
+            // Normalize the embedding for cosine similarity
+            const embedding = chunk.embedding;
+            const magnitude = Math.sqrt(
+              embedding.reduce((sum: number, val: number) => sum + val * val, 0)
+            );
+            const normalized = embedding.map((v: number) => v / magnitude);
+            docEmbeddings.push(normalized);
+          }
+        }
+        allEmbeddings.push(docEmbeddings);
+      }
+      
+      return allEmbeddings;
+    } catch (error: any) {
+      console.error('Voyage contextualized_embed error:', error.response?.data || error);
+      throw new Error(`Voyage API error: ${error.response?.data?.error || error.message || 'Unknown error'}`);
     }
   }
 
@@ -189,7 +211,7 @@ export class EmbeddingPipeline {
           content: chunk.content,
           contentHash: this.chunker.hashContent(chunk.content),
           embedding: embeddings[embeddingIndex],
-          embeddingModel: 'voyage-3',
+          embeddingModel: 'voyage-context-3',
           embeddedAt: new Date(),
           metadata: metadataMap[embeddingIndex],
           searchMeta: {
@@ -307,29 +329,42 @@ export class EmbeddingPipeline {
   }
 
   /**
-   * Embed a single query for search
+   * Embed a single query for search using contextualized endpoint
    */
   async embedQuery(query: string): Promise<number[]> {
     try {
       const response = await axios.post(
-        this.voyageApiUrl,
+        this.voyageContextualUrl,
         {
-          input: query,
-          model: 'voyage-3',
-          input_type: 'query', // Important: query type for search
-          output_dimension: 1024,
+          inputs: [[query]], // Single query wrapped in double array
+          input_type: 'query', // Important: query type for asymmetric search
+          model: 'voyage-context-3',
+          output_dimension: this.VOYAGE_DIMENSIONS
         },
         {
           headers: {
             'Authorization': `Bearer ${this.voyageApiKey}`,
             'Content-Type': 'application/json',
           },
+          timeout: 30000,
         }
       );
       
-      return response.data.data[0].embedding;
-    } catch (error) {
-      console.error('Failed to embed query:', error);
+      if (!response.data?.data?.[0]?.data?.[0]?.embedding) {
+        throw new Error('No embedding returned for query');
+      }
+      
+      // Extract embedding from nested structure
+      const embedding = response.data.data[0].data[0].embedding;
+      
+      // Normalize for cosine similarity
+      const magnitude = Math.sqrt(
+        embedding.reduce((sum: number, val: number) => sum + val * val, 0)
+      );
+      
+      return embedding.map((v: number) => v / magnitude);
+    } catch (error: any) {
+      console.error('Failed to embed query:', error.response?.data || error);
       throw error;
     }
   }

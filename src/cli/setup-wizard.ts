@@ -7,7 +7,7 @@
 
 import inquirer from 'inquirer';
 import { MongoClient } from 'mongodb';
-import { VoyageAIClient } from 'voyageai';
+import axios from 'axios';
 import ora from 'ora';
 import chalk from 'chalk';
 import boxen from 'boxen';
@@ -189,12 +189,22 @@ class SetupWizard {
     }).start();
     
     try {
-      const voyage = new VoyageAIClient({ apiKey: this.voyageKey! });
-      await voyage.embed({
-        input: ['test'],
-        model: 'voyage-3',
-        inputType: 'query'
-      });
+      await axios.post(
+        'https://api.voyageai.com/v1/contextualizedembeddings',
+        {
+          inputs: [['test']], // Double wrapped for contextualized
+          input_type: 'query',
+          model: 'voyage-context-3',
+          output_dimension: 2048
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${this.voyageKey!}`,
+            'Content-Type': 'application/json',
+          },
+          timeout: 10000,
+        }
+      );
       voyageSpinner.succeed(chalk.green('Voyage AI connection successful!'));
     } catch (error) {
       voyageSpinner.fail(chalk.red('Voyage AI connection failed'));

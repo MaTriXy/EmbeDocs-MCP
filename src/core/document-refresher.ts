@@ -4,9 +4,8 @@
  */
 
 import { MongoDBClient } from './mongodb-client.js';
-import { DocumentFetcher } from './document-fetcher.js';
-import { VoyageDocumentFetcher } from './voyage-fetcher.js';
-import { DocumentChunker } from './document-chunker.js';
+import { UniversalFetcher, FetchSource } from './universal-fetcher.js';
+import { SmartChunker } from './smart-chunker.js';
 import { EmbeddingPipeline } from './embedding-pipeline.js';
 import { RefreshResult, Document, MongoDBProduct } from '../types/index.js';
 import crypto from 'crypto';
@@ -18,17 +17,15 @@ interface RefreshOptions {
 
 export class DocumentRefresher {
   private mongodb: MongoDBClient;
-  private fetcher: DocumentFetcher;
-  private voyageFetcher: VoyageDocumentFetcher;
-  private chunker: DocumentChunker;
+  private fetcher: UniversalFetcher;
+  private chunker: SmartChunker;
   private pipeline: EmbeddingPipeline;
   private initialized = false;
 
   constructor() {
     this.mongodb = MongoDBClient.getInstance();
-    this.fetcher = new DocumentFetcher();
-    this.voyageFetcher = new VoyageDocumentFetcher();
-    this.chunker = new DocumentChunker();
+    this.fetcher = new UniversalFetcher();
+    this.chunker = new SmartChunker();
     this.pipeline = new EmbeddingPipeline();
   }
 
@@ -71,18 +68,12 @@ export class DocumentRefresher {
       errors: [],
     };
 
-    // Fetch current documentation from GitHub
+    // Define sources to fetch based on products
+    const sources: FetchSource[] = this.getSourcesToFetch(options.products);
+    
+    // Fetch all documentation using universal fetcher
     console.error('📥 Fetching latest documentation...');
-    const mongoDocs = await this.fetcher.fetchAllDocumentation();
-    
-    // Also fetch Voyage AI documentation if requested
-    let voyageDocs: Document[] = [];
-    if (!options.products || options.products.includes('voyage')) {
-      console.error('🚀 Fetching Voyage AI documentation...');
-      voyageDocs = await this.voyageFetcher.fetchAllVoyageDocumentation();
-    }
-    
-    const currentDocs = [...mongoDocs, ...voyageDocs];
+    const currentDocs = await this.fetcher.fetchFromSources(sources);
     result.documentsChecked = currentDocs.length;
 
     // Get existing document hashes from MongoDB
@@ -159,18 +150,12 @@ export class DocumentRefresher {
     const deleteResult = await collection.deleteMany({});
     result.deletedDocuments = deleteResult.deletedCount || 0;
 
-    // Fetch all documentation
+    // Define sources to fetch based on products
+    const sources: FetchSource[] = this.getSourcesToFetch(options.products);
+    
+    // Fetch all documentation using universal fetcher
     console.error('📥 Fetching all documentation...');
-    const mongoDocs = await this.fetcher.fetchAllDocumentation();
-    
-    // Also fetch Voyage AI documentation if requested
-    let voyageDocs: Document[] = [];
-    if (!options.products || options.products.includes('voyage')) {
-      console.error('🚀 Fetching Voyage AI documentation...');
-      voyageDocs = await this.voyageFetcher.fetchAllVoyageDocumentation();
-    }
-    
-    const documents = [...mongoDocs, ...voyageDocs];
+    const documents = await this.fetcher.fetchFromSources(sources);
     result.documentsChecked = documents.length;
     result.newDocuments = documents.length;
 
@@ -318,5 +303,42 @@ export class DocumentRefresher {
     const collection = this.mongodb.getDatabase().collection('metadata');
     const metadata = await collection.findOne({ type: 'refresh' });
     return metadata || { lastRefresh: null, totalRefreshes: 0 };
+  }
+
+  /**
+   * Get sources to fetch based on requested products
+   */
+  private getSourcesToFetch(products?: MongoDBProduct[]): FetchSource[] {
+    const sources: FetchSource[] = [];
+    
+    // MongoDB documentation sources
+    if (!products || products.includes('manual')) {
+      sources.push({
+        type: 'github',
+        name: 'MongoDB Manual',
+        repo: 'mongodb/docs',
+        branch: 'master',
+        product: 'manual',
+        version: '8.0',
+        priority: 5
+      });
+    }
+    
+    // Voyage AI documentation
+    if (!products || products.includes('voyage')) {
+      sources.push({
+        type: 'github',
+        name: 'Voyage Python SDK',
+        repo: 'voyage-ai/voyageai-python',
+        branch: 'main',
+        product: 'voyage',
+        version: 'latest',
+        priority: 5
+      });
+    }
+    
+    // Add more sources as needed based on products
+    
+    return sources;
   }
 }
