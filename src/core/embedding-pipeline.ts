@@ -198,8 +198,6 @@ export class EmbeddingPipeline {
       }
       
       return allEmbeddings;
-      
-        break; // Success, exit retry loop
         
       } catch (error: any) {
         retryCount++;

@@ -330,7 +330,7 @@ export class UniversalFetcher {
       // Clean RST markup
       cleaned = cleaned
         .replace(/^\.\. .+::.*/gm, '')
-        .replace(/^   :.+:.*/gm, '')
+        .replace(/^ {3}:.+:.*/gm, '')
         .replace(/::\w+:`([^`]+)`/g, '$1')
         .replace(/^\.\. _.*:/gm, '');
     }

@@ -526,12 +526,6 @@ export class HybridSearchEngine {
     return Math.min(1.0, baseScore + (terms.length * termBoost));
   }
 
-  /**
-   * Calculate hybrid score combining vector and keyword scores
-   */
-  private _calculateHybridScore(vectorScore: number, keywordScore: number): number {
-    return (vectorScore * this.VECTOR_WEIGHT) + (keywordScore * this.KEYWORD_WEIGHT);
-  }
 
   /**
    * Format results for output with "Lost in the Middle" mitigation (2025 best practice)

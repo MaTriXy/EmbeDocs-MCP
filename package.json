@@ -19,7 +19,12 @@
     "postinstall": "npm run build",
     "prepublishOnly": "npm run clean && npm run build",
     "clean": "rm -rf dist",
-    "lint": "eslint src --ext .ts"
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "test": "NODE_OPTIONS='--loader=ts-node/esm' jest",
+    "test:watch": "NODE_OPTIONS='--loader=ts-node/esm' jest --watch",
+    "test:coverage": "NODE_OPTIONS='--loader=ts-node/esm' jest --coverage",
+    "test:ci": "NODE_OPTIONS='--loader=ts-node/esm' jest --ci --coverage"
   },
   "keywords": [
     "mcp",
@@ -76,10 +81,14 @@
     "@types/cli-progress": "^3.11.6",
     "@types/figlet": "^1.5.8",
     "@types/inquirer": "^9.0.0",
+    "@types/jest": "^30.0.0",
     "@types/node": "^20.11.0",
-    "@typescript-eslint/eslint-plugin": "^7.0.0",
-    "@typescript-eslint/parser": "^7.0.0",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
     "eslint": "^8.57.0",
+    "jest": "^30.0.5",
+    "ts-jest": "^29.4.1",
+    "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
   },
   "files": [

@@ -9,6 +9,10 @@ import { MongoClient } from 'mongodb';
 import colors from 'colors';
 import ora from 'ora';
 import boxen from 'boxen';
+import dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
 
 async function cleanDatabase() {
   console.clear();
@@ -39,8 +43,13 @@ async function cleanDatabase() {
     console.log(colors.yellow.bold(`   ${i}...`));
   }
   
-  const mongoUri = process.env.MONGODB_URI || 
-    "mongodb+srv://romiluz:05101994@mongodocs.gdssyqd.mongodb.net/?retryWrites=true&w=majority&appName=mongodocs";
+  const mongoUri = process.env.MONGODB_URI;
+  
+  if (!mongoUri) {
+    console.error(colors.red('❌ Error: MONGODB_URI environment variable is required'));
+    console.error(colors.yellow('Please set MONGODB_URI in your .env file or run: mongodocs-setup'));
+    process.exit(1);
+  }
   
   const client = new MongoClient(mongoUri);
   const spinner = ora();

@@ -1,16 +1,16 @@
 #!/usr/bin/env node
 
 /**
- * ULTIMATE MONGODB + VOYAGE AI DOCUMENTATION INDEXER
+ * OPTIMIZED MONGODB + VOYAGE AI DOCUMENTATION INDEXER
  * 
- * The most comprehensive MongoDB documentation indexing tool ever created.
- * Indexes 10,000+ documents from 60+ repositories with perfect Voyage AI embeddings.
+ * Research-optimized MongoDB documentation indexing tool.
+ * Indexes the TOP 5 most comprehensive MongoDB repositories with perfect Voyage AI embeddings.
  * 
- * Why this takes time but is WORTH IT:
- * - Indexes ALL MongoDB documentation (not just the basics)
- * - Perfect embeddings with Voyage AI's latest models
+ * Why this is OPTIMIZED and FAST:
+ * - Indexes only the BEST MongoDB documentation sources (quality over quantity)
+ * - Perfect embeddings with Voyage AI's contextualized model
  * - Smart chunking for optimal retrieval
- * - Incremental updates to save time on reruns
+ * - Much faster indexing with focused, high-quality content
  * - Beautiful progress tracking so you know it's working
  */
 
@@ -39,7 +39,7 @@ const ASCII_LOGO = `
 ██║╚██╔╝██║██║   ██║██║╚██╗██║██║   ██║██║   ██║██║  ██║██╔══██╗
 ██║ ╚═╝ ██║╚██████╔╝██║ ╚████║╚██████╔╝╚██████╔╝██████╔╝██████╔╝
 ╚═╝     ╚═╝ ╚═════╝ ╚═╝  ╚═══╝ ╚═════╝  ╚═════╝ ╚═════╝ ╚═════╝ 
-                 ULTIMATE DOCUMENTATION INDEXER                    
+              OPTIMIZED TOP-5 DOCUMENTATION INDEXER                
 `;
 
 interface IndexingState {
@@ -91,20 +91,23 @@ class UltimateMongoDBIndexer {
     enableSmartRetry: true         // Intelligent error recovery
   };
   
-  // THE ULTIMATE 52-REPOSITORY COLLECTION - Everything MongoDB & Voyage AI!
+  // TOP 5 MONGODB REPOSITORIES - RESEARCH-OPTIMIZED SELECTION (2025)
+  // Selected based on comprehensive GitHub research for maximum documentation value
   private readonly SOURCES: DocumentSource[] = [
-    // === TIER 1: GENAI & RAG EXCELLENCE (The Future!) ===
-    { type: 'github', name: 'GenAI Showcase', repo: 'mongodb-developer/GenAI-Showcase', branch: 'main', product: 'genai', version: 'latest', priority: 5 },
-    { type: 'github', name: 'GenAI DevDay Notebooks', repo: 'mongodb-developer/genai-devday-notebooks', branch: 'main', product: 'genai-devday', version: 'latest', priority: 5 },
-    { type: 'github', name: 'Multimodal Agents Lab', repo: 'mongodb-labs/multimodal-agents-lab', branch: 'main', product: 'multimodal', version: 'latest', priority: 5 },
-    { type: 'github', name: 'LangChain MongoDB', repo: 'langchain-ai/langchain-mongodb', branch: 'main', product: 'langchain', version: 'latest', priority: 5 },
-    { type: 'github', name: 'MongoDB with FastAPI', repo: 'mongodb-developer/mongodb-with-fastapi', branch: 'main', product: 'fastapi', version: 'latest', priority: 5 },
-    { type: 'github', name: 'Azure Vector Search', repo: 'Azure-Samples/azure-vector-search-mongodb', branch: 'main', product: 'azure-vector', version: 'latest', priority: 4 },
-    { type: 'github', name: 'MongoDB ADK Agents', repo: 'mongodb/chatbot-adk-agents', branch: 'main', product: 'adk-agents', version: 'latest', priority: 4 },
-    { type: 'github', name: 'MCP Multi-agents', repo: 'modelcontextprotocol/mcp-multiagents', branch: 'main', product: 'mcp-agents', version: 'latest', priority: 4 },
-    { type: 'github', name: 'Laravel MongoDB Starter', repo: 'mongodb-labs/laravel-mongodb-starter', branch: 'main', product: 'laravel', version: 'latest', priority: 3 },
+    // TIER 1: Official MongoDB Documentation (highest priority)
+    { type: 'github', name: 'MongoDB Official Docs', repo: 'mongodb/docs', branch: 'master', product: 'manual', version: '8.0', priority: 5 },
+    
+    // TIER 2: Core MongoDB Database (most comprehensive source)  
+    { type: 'github', name: 'MongoDB Database Core', repo: 'mongodb/mongo', branch: 'master', product: 'core', version: 'latest', priority: 5 },
+    
+    // TIER 3: Top 3 Official Drivers (most popular and well-documented)
+    { type: 'github', name: 'Node.js Driver', repo: 'mongodb/node-mongodb-native', branch: 'main', product: 'nodejs', version: 'latest', priority: 5 },
+    { type: 'github', name: 'Go Driver', repo: 'mongodb/mongo-go-driver', branch: 'master', product: 'go', version: 'latest', priority: 5 },
+    { type: 'github', name: 'Python Driver (PyMongo)', repo: 'mongodb/mongo-python-driver', branch: 'master', product: 'pymongo', version: 'latest', priority: 5 }
+  ];
 
-    // === TIER 2: COMPLETE VOYAGE AI INTEGRATION ===
+  /* REMOVED ALL OLD SOURCES - Now using only TOP 20!
+  private readonly OLD_SOURCES: DocumentSource[] = [
     { type: 'github', name: 'Voyage Python SDK', repo: 'voyage-ai/voyageai-python', branch: 'main', product: 'voyage', version: 'latest', priority: 5 },
     { type: 'github', name: 'Voyage TypeScript SDK', repo: 'voyage-ai/typescript-sdk', branch: 'main', product: 'voyage-ts', version: 'latest', priority: 5 },
     { type: 'github', name: 'Voyage Python Client', repo: 'voyage-ai/voyage-python-client', branch: 'main', product: 'voyage-client', version: 'latest', priority: 4 },
@@ -156,6 +159,7 @@ class UltimateMongoDBIndexer {
     { type: 'github', name: 'Academia Python Lab', repo: 'mongodb-labs/academia-python-lab', branch: 'main', product: 'academia', version: 'latest', priority: 2 },
     { type: 'github', name: 'Stream Processing Examples', repo: 'mongodb-developer/stream-processing-examples', branch: 'main', product: 'streaming', version: 'latest', priority: 2 }
   ];
+  */
   
   constructor() {
     const mongoUri = process.env.MONGODB_URI!;
@@ -599,7 +603,7 @@ class UltimateMongoDBIndexer {
           {
             inputs: [actualTexts], // Group chunks for contextualized embedding
             input_type: 'document', // THIS IS CRUCIAL FOR QUALITY
-            model,
+          model,
             output_dimension: this.VOYAGE_DIMENSIONS
           },
           {
