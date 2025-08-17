@@ -93,6 +93,19 @@ async function main() {
         console.log(chalk.white(`  Match: ${testResult.dimensions === config.embedding.dimensions ? '✅' : '❌'}`));
         break;
         
+      case 'update':
+        // Smart update - only re-index changed files
+        spinner.start('Checking for repository updates...');
+        await indexer.update();
+        spinner.succeed('Update complete');
+        
+        // Show final stats
+        const updateStats = await indexer.getStats();
+        console.log(chalk.cyan('\n📊 Updated Database:'));
+        console.log(chalk.white(`  Total Documents: ${updateStats.totalDocuments}`));
+        console.log(chalk.white(`  Products: ${updateStats.products.join(', ')}`));
+        break;
+        
       default:
         // Default: run indexing
         spinner.start('Starting indexing...');

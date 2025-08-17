@@ -71,7 +71,7 @@ class MongoDBSemanticMCP {
         },
         {
           name: 'mongodb-hybrid-search',
-          description: 'Hybrid search using MongoDB $rankFusion (RRF algorithm)',
+          description: 'Hybrid search using Reciprocal Rank Fusion (RRF algorithm)',
           inputSchema: {
             type: 'object',
             properties: {

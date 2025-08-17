@@ -1,7 +1,7 @@
 {
   "name": "mongodocs-mcp",
-  "version": "9.1.1",
-  "description": "Ultra-clean MongoDB semantic search with voyage-context-3 (1024d) and $rankFusion. Clean architecture, single source of truth.",
+  "version": "10.0.0",
+  "description": "Ultra-clean MongoDB semantic search with voyage-context-3 (1024d) and RRF hybrid search. Clean architecture, single source of truth.",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
@@ -14,6 +14,7 @@
     "start": "node dist/index.js",
     "index": "node dist/cli.js",
     "index:old": "node dist/cli/index-docs.js",
+    "update": "node dist/cli.js update",
     "clean-db": "node dist/cli.js clean",
     "stats": "node dist/cli.js stats",
     "test:embed": "node dist/cli.js test",

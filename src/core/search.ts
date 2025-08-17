@@ -38,9 +38,10 @@ export class SearchService {
   }
   
   /**
-   * Hybrid Search using MongoDB $rankFusion (RRF algorithm)
-   * Documentation: mongodb/mongo - $rankFusion uses Reciprocal Rank Fusion
-   * @see https://github.com/mongodb/mongo/blob/master/src/mongo/db/query/search/README.md
+   * Hybrid Search using Reciprocal Rank Fusion (RRF) algorithm
+   * NOTE: We implement RRF manually since $rankFusion is not yet available in MongoDB 8.0
+   * This follows the same algorithm that MongoDB will use when $rankFusion becomes available
+   * @see https://github.com/JohnGUnderwood/atlas-hybrid-search for reference implementation
    */
   async hybridSearch(query: string, limit: number = 10): Promise<SearchResult[]> {
     await this.storageService.connect();
@@ -98,9 +99,10 @@ export class SearchService {
   }
   
   /**
-   * Reciprocal Rank Fusion (RRF) - MongoDB's official hybrid search algorithm
-   * Based on: mongodb/mongo/src/mongo/db/pipeline/document_source_rank_fusion.h
-   * Formula: score = Σ(1 / (k + rank_i))
+   * Reciprocal Rank Fusion (RRF) - Standard hybrid search algorithm
+   * Implements the same algorithm that MongoDB $rankFusion will use (not yet available in 8.0)
+   * Formula: score = Σ(weight / (k + rank_i))
+   * k=60 is the standard constant from RRF research papers
    */
   private reciprocalRankFusion(
     vectorResults: any[],

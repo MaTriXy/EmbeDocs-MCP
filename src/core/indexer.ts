@@ -47,6 +47,64 @@ export class Indexer {
   }
   
   /**
+   * Smart update - only re-index changed files
+   */
+  async update(): Promise<void> {
+    await this.storageService.connect();
+    
+    console.log('🔄 Checking for updates in repositories...');
+    
+    for (const repo of config.repositories) {
+      const repoPath = path.join('.repos', repo.repo.replace('/', '_'));
+      
+      try {
+        // Check if repo exists
+        await fs.access(repoPath);
+        
+        // Get current commit hash
+        const git = simpleGit(repoPath);
+        const oldHash = await git.revparse(['HEAD']);
+        
+        // Pull updates
+        console.log(`📥 Pulling updates for ${repo.name}...`);
+        await git.pull('origin', repo.branch);
+        
+        // Get new commit hash
+        const newHash = await git.revparse(['HEAD']);
+        
+        if (oldHash === newHash) {
+          console.log(`✅ ${repo.name} is up to date`);
+          continue;
+        }
+        
+        // Get list of changed files
+        const diff = await git.diff([oldHash, newHash, '--name-only']);
+        const changedFiles = diff.split('\n').filter(f => f);
+        
+        console.log(`📝 Found ${changedFiles.length} changed files in ${repo.name}`);
+        
+        // Re-index only changed documentation files
+        const docsExtensions = ['.md', '.markdown', '.mdx', '.rst', '.txt'];
+        const changedDocs = changedFiles.filter(file => 
+          docsExtensions.some(ext => file.endsWith(ext))
+        );
+        
+        if (changedDocs.length > 0) {
+          console.log(`🔄 Re-indexing ${changedDocs.length} documentation files...`);
+          await this.indexRepository(repo, changedDocs);
+        }
+        
+      } catch (error) {
+        // Repo doesn't exist, do full index
+        console.log(`🆕 ${repo.name} not found locally, doing full index...`);
+        await this.indexRepository(repo);
+      }
+    }
+    
+    console.log('✅ Update complete!');
+  }
+  
+  /**
    * Clean the database
    */
   async clean(): Promise<void> {
@@ -57,8 +115,10 @@ export class Indexer {
   
   /**
    * Index a single repository
+   * @param repo - Repository configuration
+   * @param specificFiles - Optional: only index these specific files
    */
-  private async indexRepository(repo: any): Promise<void> {
+  private async indexRepository(repo: any, specificFiles?: string[]): Promise<void> {
     this.updateProgress({ 
       phase: 'cloning', 
       currentRepo: repo.name,
@@ -71,8 +131,10 @@ export class Indexer {
     
     this.updateProgress({ phase: 'scanning', currentRepo: repo.name, current: 0, total: 0 });
     
-    // Find all markdown files
-    const files = await this.findMarkdownFiles(repoPath);
+    // Find all markdown files or use specific files
+    const files = specificFiles 
+      ? specificFiles.map(f => path.join(repoPath, f))
+      : await this.findMarkdownFiles(repoPath);
     
     let processed = 0;
     const totalFiles = files.length;

@@ -1,85 +1,65 @@
-# 🚀 MongoDB Semantic MCP
+# mongodocs-mcp
 
-[![NPM Version](https://img.shields.io/npm/v/mongodocs-mcp)](https://www.npmjs.com/package/mongodocs-mcp)
-[![License](https://img.shields.io/npm/l/mongodocs-mcp)](LICENSE)
-[![Node Version](https://img.shields.io/node/v/mongodocs-mcp)](package.json)
-[![GitHub Stars](https://img.shields.io/github/stars/romiluz13/MongoDocs-MCP)](https://github.com/romiluz13/MongoDocs-MCP)
+MongoDB documentation MCP server for Claude/Cursor. Search MongoDB docs, tutorials, and AI examples directly in your AI editor.
 
-Lightning-fast semantic search for MongoDB & Voyage AI documentation via Model Context Protocol (MCP).
+## What This Does
 
-## ✨ Features
+Provides MongoDB knowledge to Claude/Cursor through semantic search of:
+- Official MongoDB documentation
+- GenAI examples (RAG, Vector Search)
+- Production code examples
+- Interactive tutorials
 
-- **🔍 Semantic Search**: Natural language queries across 10,000+ MongoDB documents
-- **⚡ Lightning Fast**: <500ms search latency with vector embeddings
-- **🎨 Beautiful CLI**: Professional interface with ASCII art and progress bars
-- **🧠 Smart AI**: Uses voyage-code-3 for code, voyage-3 for text
-- **📊 Comprehensive**: 52 documentation sources, 10,392 documents indexed
-- **🔄 Hybrid Search**: Combines vector + keyword search for best results
-- **🎯 MCP Integration**: Seamlessly works with Cursor IDE and other MCP clients
+## Prerequisites
 
-## 📦 Installation
+1. **MongoDB Atlas** account (free tier works)
+2. **Voyage AI** API key for embeddings
+3. **Node.js** 18+
+4. **Cursor** or Claude Desktop
 
-### Via NPM (Recommended)
+## Installation
+
+### Step 1: Get Your Keys
+
+#### MongoDB Atlas Connection String
+1. Go to [MongoDB Atlas](https://cloud.mongodb.com)
+2. Create free cluster (M0)
+3. Click "Connect" → "Drivers"
+4. Copy connection string (starts with `mongodb+srv://`)
+
+#### Voyage AI API Key
+1. Go to [Voyage AI](https://www.voyageai.com)
+2. Sign up and get API key
+3. Copy key (starts with `pa-`)
+
+### Step 2: Install Package
+
 ```bash
 npm install -g mongodocs-mcp
 ```
 
-### For Cursor IDE
-Add to your MCP settings (`~/.cursor/mcp.json`):
-```json
-{
-  "mcpServers": {
-    "mongodocs": {
-      "command": "npx",
-      "args": ["mongodocs-mcp"],
-      "env": {
-        "MONGODB_URI": "your-mongodb-uri",
-        "VOYAGE_API_KEY": "your-voyage-key"
-      }
-    }
-  }
-}
-```
+### Step 3: Index Documentation (One-Time Setup)
 
-## 🚀 Quick Start
-
-### Prerequisites
-- Node.js 18+
-- MongoDB Atlas cluster (free tier works!)
-- Voyage AI API key ([Get one here](https://voyage.ai))
-
-### 1. Install
 ```bash
-npm install -g mongodocs-mcp
-```
+# Set your keys
+export MONGODB_URI="mongodb+srv://YOUR_CONNECTION_STRING"
+export VOYAGE_API_KEY="pa-YOUR_API_KEY"
 
-### 2. Setup (Interactive Wizard)
-```bash
-mongodocs-setup
-```
-The beautiful setup wizard will guide you through:
-- 🔗 MongoDB Atlas connection
-- 🔑 Voyage AI API key
-- 📊 Vector index creation
-
-### 3. Index Documentation (One-time)
-```bash
+# Index documentation (takes ~15 minutes)
 mongodocs-index
 ```
-Indexes 10,000+ documents from:
-- MongoDB Manual (v8.0)
-- All major drivers (Node.js, Python, Go, etc.)
-- Atlas documentation
-- GenAI showcase examples
-- Voyage AI documentation
 
-### 4. Start MCP Server
-```bash
-mongodocs-mcp
-```
+This downloads and indexes ~10,000 documents from:
+- MongoDB official docs
+- GenAI Showcase (3.9k stars)
+- MongoDB Chatbot (RAG implementation)
+- Vector Search tutorials
+- Multimodal AI examples
 
-### 5. Configure Cursor IDE
-Add to `~/.cursor/mcp.json`:
+### Step 4: Configure Cursor
+
+Add to `.cursor/settings.json` in your project:
+
 ```json
 {
   "mcpServers": {
@@ -87,173 +67,105 @@ Add to `~/.cursor/mcp.json`:
       "command": "npx",
       "args": ["mongodocs-mcp"],
       "env": {
-        "MONGODB_URI": "your-mongodb-uri",
-        "VOYAGE_API_KEY": "your-voyage-key"
+        "MONGODB_URI": "mongodb+srv://YOUR_CONNECTION_STRING",
+        "VOYAGE_API_KEY": "pa-YOUR_API_KEY"
       }
     }
   }
 }
 ```
 
-## 🛠️ MCP Tools
+Restart Cursor after adding configuration.
 
-### `search_mongodb_docs`
-Search MongoDB documentation using natural language.
-```javascript
-{
-  "query": "how to create compound index",
-  "limit": 5,
-  "products": ["manual", "nodejs"]
-}
-```
+## Usage
 
-### `explain_mongodb_concept`
-Get detailed explanations of MongoDB concepts.
-```javascript
-{
-  "concept": "aggregation pipeline",
-  "depth": "intermediate"
-}
-```
+### In Cursor/Claude
 
-### `find_similar_docs`
-Find documents similar to provided content.
-```javascript
-{
-  "content": "db.collection.createIndex({field1: 1, field2: -1})",
-  "limit": 5
-}
-```
+Ask questions like:
+- "How do I implement vector search in MongoDB?"
+- "Show me RAG examples with MongoDB"
+- "How to create a search index?"
 
-### `get_search_status`
-Get system status and statistics.
-```javascript
-// Returns document count, products indexed, health status
-```
+The MCP provides three search methods:
+- **Semantic search** - finds conceptually related docs
+- **Keyword search** - exact term matching
+- **Hybrid search** - combines both methods
 
-## 📊 Performance
+### Keep Documentation Updated
 
-- **Documents**: 10,392 indexed
-- **Search Latency**: <500ms average
-- **Relevance Scores**: 0.75-0.89 typical
-- **Index Size**: ~140MB
-- **Memory Usage**: <500MB
-
-## 🎨 Beautiful CLI
-
-The CLI features:
-- ASCII art with gradient colors
-- Real-time progress bars
-- Animated spinners
-- Styled tables
-- Interactive prompts
-
-```
-   __  __                        ____  ____  
-  |  \/  | ___  _ __   __ _  ___|  _ \| __ ) 
-  | |\/| |/ _ \| '_ \ / _` |/ _ \ | | |  _ \ 
-  | |  | | (_) | | | | (_| | (_) | |_| | |_) |
-  |_|  |_|\___/|_| |_|\__, |\___/|____/|____/ 
-                      |___/                    
-        🚀 Semantic Search MCP Server
-```
-
-## 🔧 Configuration
-
-### Environment Variables
 ```bash
-# Required
-MONGODB_URI=mongodb+srv://...
-VOYAGE_API_KEY=pa-...
-
-# Optional
-MONGODB_DATABASE=mongodb_semantic_docs  # Default
-MONGODB_COLLECTION=documents            # Default
+# Weekly update (only re-indexes changed files)
+mongodocs-index update
 ```
 
-### MongoDB Atlas Setup
-1. Create Atlas cluster
-2. Enable Vector Search
-3. Create index named `vector_index`:
-```json
-{
-  "fields": [{
-    "type": "vector",
-    "path": "embedding",
-    "numDimensions": 1024,
-    "similarity": "cosine"
-  }]
-}
-```
+### CLI Commands
 
-## 📚 Documentation Sources
-
-### Tier 1 - Core Documentation
-- MongoDB Manual (v8.0)
-- MongoDB Atlas Documentation
-- MongoDB Shell Documentation
-
-### Tier 2 - Language Drivers
-- Node.js Driver
-- Python (PyMongo & Motor)
-- Go Driver
-- Java Driver
-- Rust Driver
-
-### Tier 3 - Specialized
-- GenAI Showcase (RAG patterns)
-- Voyage AI SDKs
-- LangChain MongoDB
-- Vector Search Lab
-
-[Full list of 52 sources →](DOCUMENT_SOURCES.md)
-
-## 🧪 Development
-
-### Build from Source
 ```bash
+mongodocs-index          # Full index (first time)
+mongodocs-index update   # Smart update (only changed files)
+mongodocs-index clean    # Clear database
+mongodocs-index stats    # Show statistics
+mongodocs-index test     # Test embeddings
+```
+
+## Troubleshooting
+
+### "Database is empty"
+Run `mongodocs-index` to populate database.
+
+### "Dimension mismatch error"
+Clean and re-index:
+```bash
+mongodocs-index clean
+mongodocs-index
+```
+
+### "Connection refused"
+Check MongoDB URI and network access:
+1. Atlas → Network Access → Add your IP
+2. Verify connection string is correct
+
+### "Rate limit exceeded"
+Voyage AI free tier limit hit. Wait or upgrade plan.
+
+## Architecture
+
+- **Embeddings**: voyage-context-3 (1024 dimensions)
+- **Database**: MongoDB Atlas
+- **Search**: Vector search + text search with RRF
+- **Repositories**: 5 curated MongoDB repos
+- **Updates**: Git-based incremental indexing
+
+## Performance
+
+- Initial index: ~15 minutes
+- Smart update: ~2 minutes
+- Search latency: <500ms
+- Documents: ~10,000
+- Storage: ~200MB in MongoDB
+
+## Development
+
+```bash
+# Clone repo
 git clone https://github.com/romiluz/mongodocs-mcp.git
 cd mongodocs-mcp
+
+# Install dependencies
 npm install
+
+# Build
 npm run build
+
+# Run locally
+npm start
 ```
 
-### Run Tests
-```bash
-npm test
-```
+## License
 
-### Local Development
-```bash
-npm run dev
-```
+MIT
 
-## 🤝 Contributing
+## Support
 
-Contributions welcome! Please:
-1. Fork the repository
-2. Create a feature branch
-3. Add tests for new features
-4. Submit a PR
-
-## 📄 License
-
-MIT © Rom Iluz
-
-## 🙏 Acknowledgments
-
-- MongoDB for comprehensive documentation
-- Voyage AI for powerful embeddings
-- Anthropic for Model Context Protocol
-- The MCP community
-
-## 📊 Stats
-
-- **Version**: 8.0.0
-- **Downloads**: ![NPM Downloads](https://img.shields.io/npm/dt/mongodocs-mcp)
-- **Size**: ~100KB packed
-- **Dependencies**: 20
-
----
-
-Built with ❤️ for the MongoDB community
+- Issues: [GitHub Issues](https://github.com/romiluz/mongodocs-mcp/issues)
+- Author: Rom Iluz

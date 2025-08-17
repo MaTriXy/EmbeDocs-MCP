@@ -46,15 +46,48 @@ export const config = {
     numCandidates: 300
   },
   
-  // Repository Configuration
+  // Repository Configuration - OPTIMIZED FOR PRODUCTION v10.0.0
+  // No redundancy - each repo has unique, valuable content
   repositories: [
     {
-      name: 'MongoDB Documentation',
+      name: 'MongoDB Official Documentation (Core)',
       repo: 'mongodb/docs',
       branch: 'master',
-      product: 'complete',
+      product: 'docs',
       version: '8.2',
-      priority: 5
+      priority: 10  // Essential: Complete MongoDB documentation
+    },
+    {
+      name: 'GenAI Showcase (3.9k⭐ - Best AI/RAG Examples)',
+      repo: 'mongodb-developer/GenAI-Showcase',
+      branch: 'main',
+      product: 'genai',
+      version: 'latest',
+      priority: 9  // Critical: Most comprehensive AI/Vector Search examples
+    },
+    {
+      name: 'MongoDB Chatbot (Official RAG Implementation)',
+      repo: 'mongodb/chatbot',
+      branch: 'main',
+      product: 'rag',
+      version: 'latest',
+      priority: 8  // Important: Production RAG with Atlas Vector Search
+    },
+    {
+      name: 'Vector Search Notebooks (Tutorials)',
+      repo: 'mongodb/docs-notebooks',
+      branch: 'main',
+      product: 'tutorials',
+      version: 'latest',
+      priority: 7  // Valuable: Step-by-step Vector Search tutorials
+    },
+    {
+      name: 'Multimodal AI Agents Lab',
+      repo: 'mongodb-developer/multimodal-agents-lab',
+      branch: 'main',
+      product: 'agents',
+      version: 'latest',
+      priority: 6  // Cutting-edge: Multimodal AI with MongoDB + LangGraph
     }
   ]
 } as const;
