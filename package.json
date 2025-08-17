@@ -1,6 +1,6 @@
 {
   "name": "mongodocs-mcp",
-  "version": "9.0.0",
+  "version": "9.1.0",
   "description": "Ultra-clean MongoDB semantic search with voyage-context-3 (1024d) and $rankFusion. Clean architecture, single source of truth.",
   "type": "module",
   "main": "dist/index.js",
