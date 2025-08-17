@@ -1,8 +1,0 @@
-#!/usr/bin/env node
-
-/**
- * MongoDB Docs Setup Wizard
- * Beautiful onboarding experience
- */
-
-import('../dist/cli/setup-wizard.js');

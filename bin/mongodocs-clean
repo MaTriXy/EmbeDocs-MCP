@@ -1,8 +1,0 @@
-#!/usr/bin/env node
-
-/**
- * MongoDB Database Cleaner
- * Resets the database for a fresh start
- */
-
-import('../dist/cli/clean-database.js');

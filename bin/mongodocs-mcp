@@ -3,34 +3,26 @@
 // Check for help flag first
 if (process.argv.includes('--help') || process.argv.includes('-h')) {
   console.log(`
-🔥 MongoDB Semantic MCP Server v7.2.3
+🚀 MongoDB Semantic MCP Server v9.0.0 - CLEAN ARCHITECTURE
 
 USAGE:
   mongodocs-mcp                 Start the MCP server
   mongodocs-mcp --help         Show this help
 
-SETUP:
-  1. Create .env file with your MongoDB URI and Voyage API key
-  2. Run: mongodocs-index to index documentation
-  3. Start: mongodocs-mcp
+CONFIGURATION:
+  Model: voyage-context-3 (1024 dimensions)
+  Search: MongoDB Atlas Vector Search + $rankFusion
 
 ENVIRONMENT VARIABLES:
   MONGODB_URI              MongoDB Atlas connection string
-  MONGODB_DATABASE         Database name (default: mongodb_semantic_docs)
-  MONGODB_COLLECTION       Collection name (default: documents)
-  VOYAGE_API_KEY          Voyage AI API key for embeddings
+  VOYAGE_API_KEY          Voyage AI API key
 
-EXAMPLE .env:
-  MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/
-  MONGODB_COLLECTION=documents
-  VOYAGE_API_KEY=pa-xxxxxxxxxxxxx
-
-For more info: https://github.com/your-repo/mongodocs-mcp
+For more info: https://github.com/romiluz/mongodocs-mcp
 `);
   process.exit(0);
 }
 
-// Import and run - the main script will handle env loading and validation
+// Import and run
 import('../dist/index.js').catch(error => {
   console.error('❌ Failed to start MCP server:', error.message);
   process.exit(1);

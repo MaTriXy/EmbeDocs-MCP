@@ -1,4 +1,0 @@
-#!/usr/bin/env node
-import('../dist/cli/progress-ui.js').then(module => {
-  // The module will auto-run when imported
-}).catch(console.error);

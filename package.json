@@ -1,22 +1,22 @@
 {
   "name": "mongodocs-mcp",
-  "version": "8.2.2",
-  "description": "Lightning-fast semantic search for MongoDB documentation via Model Context Protocol. 10,000+ documents, <500ms search.",
+  "version": "9.0.0",
+  "description": "Ultra-clean MongoDB semantic search with voyage-context-3 (1024d) and $rankFusion. Clean architecture, single source of truth.",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
     "mongodocs-mcp": "bin/mongodocs-mcp",
-    "mongodocs-index": "bin/mongodocs-index",
-    "mongodocs-clean": "bin/mongodocs-clean",
-    "mongodocs-setup": "bin/mongodocs-setup",
-    "mongodocs-progress": "bin/mongodocs-progress"
+    "mongodocs-index": "bin/mongodocs-index"
   },
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
     "start": "node dist/index.js",
-    "index": "node dist/cli/index-docs.js",
-    "clean-db": "node dist/cli/clean-database.js",
+    "index": "node dist/cli.js",
+    "index:old": "node dist/cli/index-docs.js",
+    "clean-db": "node dist/cli.js clean",
+    "stats": "node dist/cli.js stats",
+    "test:embed": "node dist/cli.js test",
     "progress": "node dist/cli/progress-ui.js",
     "postinstall": "npm run build",
     "prepublishOnly": "npm run clean && npm run build",
