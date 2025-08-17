@@ -65,3 +65,6 @@ temp/
 # Cache
 .cache
 .eslintcache
+
+# Downloaded repositories (auto-created during indexing)
+.repos/
