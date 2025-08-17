@@ -18,7 +18,6 @@
     "stats": "node dist/cli.js stats",
     "test:embed": "node dist/cli.js test",
     "progress": "node dist/cli/progress-ui.js",
-    "postinstall": "npm run build",
     "prepublishOnly": "npm run clean && npm run build",
     "clean": "rm -rf dist",
     "lint": "eslint src --ext .ts",
