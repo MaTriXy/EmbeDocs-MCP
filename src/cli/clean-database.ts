@@ -10,6 +10,7 @@ import colors from 'colors';
 import ora from 'ora';
 import boxen from 'boxen';
 import dotenv from 'dotenv';
+import * as fs from 'fs/promises';
 
 // Load environment variables
 dotenv.config();
@@ -91,6 +92,48 @@ async function cleanDatabase() {
     await newCollection.createIndex({ title: 'text', content: 'text' });
     
     spinner.succeed(colors.green('✅ Indexes created!'));
+    
+    // Clean state files and local directories
+    spinner.start(colors.cyan('Cleaning state files and directories...'));
+    const stateFiles = [
+      'indexing-state.json',
+      'indexing-checkpoint.json', 
+      '.indexing-progress'
+    ];
+    
+    const directories = [
+      'mongodb-docs'
+    ];
+    
+    let cleanedFiles = 0;
+    let cleanedDirs = 0;
+    
+    // Clean state files
+    for (const file of stateFiles) {
+      try {
+        await fs.unlink(file);
+        cleanedFiles++;
+      } catch (error) {
+        // File doesn't exist or already deleted - that's fine
+      }
+    }
+    
+    // Clean directories
+    for (const dir of directories) {
+      try {
+        await fs.rm(dir, { recursive: true, force: true });
+        cleanedDirs++;
+      } catch (error) {
+        // Directory doesn't exist or already deleted - that's fine
+      }
+    }
+    
+    const totalCleaned = cleanedFiles + cleanedDirs;
+    if (totalCleaned > 0) {
+      spinner.succeed(colors.green(`✅ Cleaned ${cleanedFiles} state files and ${cleanedDirs} directories!`));
+    } else {
+      spinner.succeed(colors.gray('✅ No state files or directories to clean'));
+    }
     
     // Vector index note
     const vectorNote = boxen(
