@@ -1,6 +1,6 @@
 /**
  * ENHANCED Voyage AI Embedding Pipeline
- * Uses voyage-3 model for TRUE contextualized 1024-dimensional embeddings
+ * Uses voyage-context-3 model for TRUE contextualized 1024-dimensional embeddings
  * 
  * RESEARCH-BASED IMPROVEMENTS:
  * - RAGFlow-inspired dynamic batching with memory management
@@ -16,7 +16,7 @@ import pLimit from 'p-limit';
 
 export class EmbeddingPipeline {
   private voyageApiKey: string;
-  private voyageEmbedUrl = 'https://api.voyageai.com/v1/embeddings';
+  private voyageContextualUrl = 'https://api.voyageai.com/v1/contextualizedembeddings';
   private mongodb: MongoDBClient;
   private chunker: SmartChunker;
   private rateLimiter = pLimit(3); // Max 3 concurrent API calls
@@ -26,7 +26,7 @@ export class EmbeddingPipeline {
   private readonly MAX_TOTAL_CHUNKS = 16000;
   private dynamicBatchSize = 8; // RAGFlow-inspired: Start with 8, adjust based on performance
   private readonly MIN_BATCH_SIZE = 2; // Minimum for stability
-  private readonly VOYAGE_DIMENSIONS = 1024; // voyage-3: Perfect 1024 dimensions for Atlas Vector Search
+  private readonly VOYAGE_DIMENSIONS = 1024; // voyage-context-3: Perfect 1024 dimensions for Atlas Vector Search
 
   constructor() {
     const apiKey = process.env.VOYAGE_API_KEY;
@@ -145,21 +145,20 @@ export class EmbeddingPipeline {
    * This is the GAME CHANGER - chunks are embedded with full document context!
    */
   private async callContextualizedEmbed(documentGroups: string[][]): Promise<number[][][]> {
-    const model = 'voyage-3';
-    console.error(`🚀 Using ${model} with 1024-dimensional embeddings - PERFECT!`);
+    const model = 'voyage-context-3';
+    console.error(`🚀 Using ${model} with contextualized embeddings - 1024 dimensions PERFECT!`);
 
     let retryCount = 0;
     const maxRetries = 3;
     
     while (retryCount < maxRetries) {
       try {
-      // Call the Voyage embeddings endpoint with correct parameters
-      const flattenedInputs = documentGroups.flat(); // Flatten to single array for regular endpoint
+      // Call the Voyage contextualized embeddings endpoint with correct parameters
       const response = await this.rateLimiter(() =>
         axios.post(
-          this.voyageEmbedUrl,
+          this.voyageContextualUrl,
           {
-            input: flattenedInputs,
+            inputs: documentGroups, // Array of arrays - each sub-array is a document's chunks
             model: model,
             input_type: 'document'
           },
@@ -177,16 +176,16 @@ export class EmbeddingPipeline {
         throw new Error('No data returned from Voyage contextualized API');
       }
       
-      // Extract embeddings - the response structure is:
+      // Extract embeddings from contextualized API response structure:
       // data: [ { data: [ { embedding: [...] }, { embedding: [...] } ] }, ... ]
       const allEmbeddings: number[][][] = [];
       
       for (const docResult of response.data.data) {
         const docEmbeddings: number[][] = [];
-        for (const chunk of docResult.data) {
-          if (chunk?.embedding) {
+        for (const chunkResult of docResult.data) {
+          if (chunkResult?.embedding) {
             // Normalize the embedding for cosine similarity
-            const embedding = chunk.embedding;
+            const embedding = chunkResult.embedding;
             const magnitude = Math.sqrt(
               embedding.reduce((sum: number, val: number) => sum + val * val, 0)
             );
@@ -363,11 +362,11 @@ export class EmbeddingPipeline {
   async embedQuery(query: string): Promise<number[]> {
     try {
       const response = await axios.post(
-        this.voyageEmbedUrl,
+        this.voyageContextualUrl,
         {
-          input: [query], // Single query 
+          inputs: [[query]], // Single query wrapped in contextualized format
           input_type: 'query', // Important: query type for asymmetric search
-          model: 'voyage-3',
+          model: 'voyage-context-3',
           output_dimension: this.VOYAGE_DIMENSIONS
         },
         {
