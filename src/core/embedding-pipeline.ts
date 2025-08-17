@@ -1,6 +1,6 @@
 /**
  * ENHANCED Voyage AI Embedding Pipeline
- * Uses voyage-context-3 model for TRUE contextualized 2048-dimensional embeddings
+ * Uses voyage-3 model for TRUE contextualized 1024-dimensional embeddings
  * 
  * RESEARCH-BASED IMPROVEMENTS:
  * - RAGFlow-inspired dynamic batching with memory management
@@ -16,7 +16,7 @@ import pLimit from 'p-limit';
 
 export class EmbeddingPipeline {
   private voyageApiKey: string;
-  private voyageContextualUrl = 'https://api.voyageai.com/v1/contextualizedembeddings';
+  private voyageEmbedUrl = 'https://api.voyageai.com/v1/embeddings';
   private mongodb: MongoDBClient;
   private chunker: SmartChunker;
   private rateLimiter = pLimit(3); // Max 3 concurrent API calls
@@ -26,7 +26,7 @@ export class EmbeddingPipeline {
   private readonly MAX_TOTAL_CHUNKS = 16000;
   private dynamicBatchSize = 8; // RAGFlow-inspired: Start with 8, adjust based on performance
   private readonly MIN_BATCH_SIZE = 2; // Minimum for stability
-  private readonly VOYAGE_DIMENSIONS = 2048; // 2025: MAXIMUM dimensions for best performance
+  private readonly VOYAGE_DIMENSIONS = 1024; // voyage-3: Perfect 1024 dimensions for Atlas Vector Search
 
   constructor() {
     const apiKey = process.env.VOYAGE_API_KEY;
@@ -145,23 +145,23 @@ export class EmbeddingPipeline {
    * This is the GAME CHANGER - chunks are embedded with full document context!
    */
   private async callContextualizedEmbed(documentGroups: string[][]): Promise<number[][][]> {
-    const model = 'voyage-context-3';
-    console.error(`🚀 Using ${model} with RESEARCH-ENHANCED contextualized embeddings!`);
+    const model = 'voyage-3';
+    console.error(`🚀 Using ${model} with 1024-dimensional embeddings - PERFECT!`);
 
     let retryCount = 0;
     const maxRetries = 3;
     
     while (retryCount < maxRetries) {
       try {
-      // Call the CORRECT contextualized embeddings endpoint!
+      // Call the Voyage embeddings endpoint with correct parameters
+      const flattenedInputs = documentGroups.flat(); // Flatten to single array for regular endpoint
       const response = await this.rateLimiter(() =>
         axios.post(
-          this.voyageContextualUrl,
+          this.voyageEmbedUrl,
           {
-            inputs: documentGroups, // Array of arrays - each sub-array is a document's chunks
-            input_type: 'document',
+            input: flattenedInputs,
             model: model,
-            output_dimension: this.VOYAGE_DIMENSIONS
+            input_type: 'document'
           },
           {
             headers: {
@@ -363,11 +363,11 @@ export class EmbeddingPipeline {
   async embedQuery(query: string): Promise<number[]> {
     try {
       const response = await axios.post(
-        this.voyageContextualUrl,
+        this.voyageEmbedUrl,
         {
-          inputs: [[query]], // Single query wrapped in double array
+          input: [query], // Single query 
           input_type: 'query', // Important: query type for asymmetric search
-          model: 'voyage-context-3',
+          model: 'voyage-3',
           output_dimension: this.VOYAGE_DIMENSIONS
         },
         {
