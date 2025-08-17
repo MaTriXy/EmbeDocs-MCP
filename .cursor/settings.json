@@ -2,7 +2,7 @@
   "mcpServers": {
     "mongodocs": {
       "command": "npx",
-      "args": ["mongodocs-mcp@9.1.0"],
+      "args": ["mongodocs-mcp"],
       "env": {
         "MONGODB_URI": "mongodb+srv://romiluz:05101994@mongodocs.gdssyqd.mongodb.net/?retryWrites=true&w=majority&appName=mongodocs",
         "VOYAGE_API_KEY": "pa-s4NXzS13lWb0V8J16kXESEmW3f1y50gSoT5v55Y5b6q"

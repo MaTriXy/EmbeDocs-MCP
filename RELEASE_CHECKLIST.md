@@ -56,8 +56,8 @@
 - [ ] Build project (`npm run build`)
 - [ ] Test local install
 - [ ] Publish to npm (`npm publish`)
-- [ ] Test global install (`npm i -g mongodocs-mcp@10.0.0`)
-- [ ] Update Cursor settings to use v10.0.0
+- [ ] Test global install (`npm i -g mongodocs-mcp`)
+- [ ] Update Cursor settings to use latest version
 
 ## Post-Publish
 - [ ] Create GitHub release with changelog

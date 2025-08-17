@@ -2,7 +2,7 @@
 
 ## Installation
 ```bash
-npm install -g mongodocs-mcp@10.0.0
+npm install -g mongodocs-mcp
 ```
 
 ## Environment Variables
@@ -66,7 +66,7 @@ Verifies voyage-context-3 is working correctly.
 ### Initial Setup
 ```bash
 # 1. Install globally
-npm install -g mongodocs-mcp@10.0.0
+npm install -g mongodocs-mcp
 
 # 2. Set environment variables
 export MONGODB_URI="..."
