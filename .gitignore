@@ -73,7 +73,12 @@ temp/
 CLAUDE.md
 IMPLEMENTATION_PLAN_*.md
 IMPLEMENTATION_RESULTS.md
+INSTALLATION_OPTIONS.md
+MONGODB_REPOSITORIES.md
+RELEASE_CHECKLIST.md
+CLI_COMMANDS.md
 atlas-search-playground-chatbot-starter-main/
+docs/
 
 # Claude Code specific
 *.claude

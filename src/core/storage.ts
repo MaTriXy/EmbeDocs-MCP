@@ -19,6 +19,12 @@ export interface Document {
   indexedAt: Date;
 }
 
+export interface RepositoryState {
+  repoName: string;
+  commitHash: string;
+  lastIndexed: Date;
+}
+
 export class StorageService {
   private static instance: StorageService;
   private client: MongoClient | null = null;
@@ -422,6 +428,39 @@ export class StorageService {
     } catch (error) {
       console.warn('Could not create text index:', error);
     }
+  }
+  
+  /**
+   * Store repository commit hash for smart update tracking
+   */
+  async storeRepositoryHash(repoName: string, commitHash: string): Promise<void> {
+    if (!this.db) throw new Error('Not connected to MongoDB');
+    
+    const stateCollection = this.db.collection<RepositoryState>('repository_states');
+    
+    await stateCollection.updateOne(
+      { repoName },
+      { 
+        $set: { 
+          repoName,
+          commitHash,
+          lastIndexed: new Date()
+        }
+      },
+      { upsert: true }
+    );
+  }
+  
+  /**
+   * Get stored repository commit hash
+   */
+  async getRepositoryHash(repoName: string): Promise<string | null> {
+    if (!this.db) throw new Error('Not connected to MongoDB');
+    
+    const stateCollection = this.db.collection<RepositoryState>('repository_states');
+    const state = await stateCollection.findOne({ repoName });
+    
+    return state?.commitHash || null;
   }
   
   /**

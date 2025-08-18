@@ -39,72 +39,132 @@ export class Indexer {
   }
   
   /**
-   * Main indexing method - SIMPLE and CLEAN
+   * SMART INDEX (Default behavior) - Checks for changes first, then updates only what's needed
+   * Falls back to full indexing for new repositories or when smart update fails
    */
   async index(): Promise<void> {
     await this.storageService.connect();
     
-    for (const repo of config.repositories) {
-      await this.indexRepository(repo);
-    }
-  }
-  
-  /**
-   * Smart update - only re-index changed files
-   */
-  async update(): Promise<void> {
-    await this.storageService.connect();
+    console.log('🔄 Smart indexing - checking for repository changes...');
     
-    console.log('🔄 Checking for updates in repositories...');
+    let anyRepoWasNew = false;
     
     for (const repo of config.repositories) {
-      const repoPath = path.join('.repos', repo.repo.replace('/', '_'));
-      
       try {
-        // Check if repo exists
+        const repoPath = path.join('.repos', repo.repo.replace('/', '_'));
+        
+        // Check if repo exists locally
         await fs.access(repoPath);
         
-        // Get current commit hash
+        // Get current and stored commit hashes
         const git = simpleGit(repoPath);
-        const oldHash = await git.revparse(['HEAD']);
+        const currentHash = await git.revparse(['HEAD']);
+        const storedHash = await this.storageService.getRepositoryHash(repo.name);
         
-        // Pull updates
-        console.log(`📥 Pulling updates for ${repo.name}...`);
-        await git.pull('origin', repo.branch);
-        
-        // Get new commit hash
-        const newHash = await git.revparse(['HEAD']);
-        
-        if (oldHash === newHash) {
-          console.log(`✅ ${repo.name} is up to date`);
+        if (currentHash === storedHash) {
+          console.log(`✅ ${repo.name} up to date (${currentHash.substring(0, 8)}), skipping...`);
           continue;
         }
         
-        // Get list of changed files
-        const diff = await git.diff([oldHash, newHash, '--name-only']);
-        const changedFiles = diff.split('\n').filter(f => f);
-        
-        console.log(`📝 Found ${changedFiles.length} changed files in ${repo.name}`);
-        
-        // Re-index only changed documentation files
-        const docsExtensions = ['.md', '.markdown', '.mdx', '.rst', '.txt'];
-        const changedDocs = changedFiles.filter(file => 
-          docsExtensions.some(ext => file.endsWith(ext))
-        );
-        
-        if (changedDocs.length > 0) {
-          console.log(`🔄 Re-indexing ${changedDocs.length} documentation files...`);
-          await this.indexRepository(repo, changedDocs);
+        if (storedHash) {
+          // Smart update: only changed files
+          console.log(`🔄 ${repo.name} has changes (${storedHash.substring(0, 8)} → ${currentHash.substring(0, 8)}), updating...`);
+          await this.smartUpdateRepository(repo, storedHash, currentHash);
+        } else {
+          // No stored hash = first time indexing
+          console.log(`🆕 ${repo.name} first time indexing...`);
+          anyRepoWasNew = true;
+          await this.indexRepository(repo);
+          // Store hash after successful indexing
+          await this.storageService.storeRepositoryHash(repo.name, currentHash);
         }
         
       } catch (error) {
-        // Repo doesn't exist, do full index
+        // Repo missing/corrupted = full index needed
         console.log(`🆕 ${repo.name} not found locally, doing full index...`);
+        anyRepoWasNew = true;
         await this.indexRepository(repo);
+        
+        // Store hash after successful indexing
+        try {
+          const repoPath = path.join('.repos', repo.repo.replace('/', '_'));
+          const git = simpleGit(repoPath);
+          const currentHash = await git.revparse(['HEAD']);
+          await this.storageService.storeRepositoryHash(repo.name, currentHash);
+        } catch (hashError) {
+          console.warn(`Could not store hash for ${repo.name}:`, hashError);
+        }
       }
     }
     
-    console.log('✅ Update complete!');
+    console.log(anyRepoWasNew ? '✅ Smart indexing complete!' : '✅ Smart update complete!');
+  }
+  
+  /**
+   * FORCE FULL REBUILD - Re-indexes everything from scratch
+   * Use when things go wrong or you want a completely fresh start
+   */
+  async rebuild(): Promise<void> {
+    await this.storageService.connect();
+    
+    console.log('🔥 FORCE REBUILD: Re-indexing everything from scratch...');
+    
+    for (const repo of config.repositories) {
+      await this.indexRepository(repo);
+      
+      // Store hash after successful indexing
+      try {
+        const repoPath = path.join('.repos', repo.repo.replace('/', '_'));
+        const git = simpleGit(repoPath);
+        const currentHash = await git.revparse(['HEAD']);
+        await this.storageService.storeRepositoryHash(repo.name, currentHash);
+      } catch (hashError) {
+        console.warn(`Could not store hash for ${repo.name}:`, hashError);
+      }
+    }
+    
+    console.log('✅ Force rebuild complete!');
+  }
+  
+  /**
+   * Smart update repository - only re-index changed files between commits
+   */
+  private async smartUpdateRepository(repo: any, oldHash: string, newHash: string): Promise<void> {
+    const repoPath = path.join('.repos', repo.repo.replace('/', '_'));
+    const git = simpleGit(repoPath);
+    
+    // Pull latest changes first
+    console.log(`📥 Pulling updates for ${repo.name}...`);
+    await git.pull('origin', repo.branch);
+    
+    // Get list of changed files between commits
+    const diff = await git.diff([oldHash, newHash, '--name-only']);
+    const changedFiles = diff.split('\n').filter(f => f);
+    
+    console.log(`📝 Found ${changedFiles.length} changed files in ${repo.name}`);
+    
+    // Re-index only changed documentation files
+    const docsExtensions = ['.md', '.markdown', '.mdx', '.rst', '.txt'];
+    const changedDocs = changedFiles.filter(file => 
+      docsExtensions.some(ext => file.endsWith(ext))
+    );
+    
+    if (changedDocs.length > 0) {
+      console.log(`🔄 Re-indexing ${changedDocs.length} documentation files...`);
+      await this.indexRepository(repo, changedDocs);
+    }
+    
+    // Store updated hash after successful processing
+    await this.storageService.storeRepositoryHash(repo.name, newHash);
+  }
+  
+  /**
+   * Legacy update method - now just calls the smart index()
+   * @deprecated Use index() instead - it's smart by default now
+   */
+  async update(): Promise<void> {
+    console.log('ℹ️  update() is deprecated - calling smart index() instead');
+    await this.index();
   }
   
   /**

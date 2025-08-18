@@ -94,10 +94,10 @@ async function main() {
         break;
         
       case 'update':
-        // Smart update - only re-index changed files
-        spinner.start('Checking for repository updates...');
+        // Legacy command - now just calls smart index()
+        spinner.start('Smart indexing (legacy update command)...');
         await indexer.update();
-        spinner.succeed('Update complete');
+        spinner.succeed('Smart indexing complete');
         
         // Show final stats
         const updateStats = await indexer.getStats();
@@ -106,17 +106,30 @@ async function main() {
         console.log(chalk.white(`  Products: ${updateStats.products.join(', ')}`));
         break;
         
+      case 'rebuild':
+        // Force full rebuild - when things go wrong
+        spinner.start('Force rebuilding everything...');
+        await indexer.rebuild();
+        spinner.succeed('Force rebuild complete');
+        
+        // Show final stats
+        const rebuildStats = await indexer.getStats();
+        console.log(chalk.cyan('\n📊 Rebuilt Database:'));
+        console.log(chalk.white(`  Total Documents: ${rebuildStats.totalDocuments}`));
+        console.log(chalk.white(`  Products: ${rebuildStats.products.join(', ')}`));
+        break;
+        
       default:
-        // Default: run indexing
-        spinner.start('Starting indexing...');
+        // Default: smart indexing (checks for changes first)
+        spinner.start('Smart indexing (checking for changes)...');
         await indexer.index();
-        spinner.succeed('Indexing complete');
+        spinner.succeed('Smart indexing complete');
         
         // Show final stats
         const finalStats = await indexer.getStats();
         
         const successBox = boxen(
-          chalk.green.bold('✅ Indexing Complete!\n\n') +
+          chalk.green.bold('✅ Smart Indexing Complete!\n\n') +
           chalk.white(`Total Documents: ${chalk.yellow(finalStats.totalDocuments)}\n`) +
           chalk.white(`Model: ${chalk.green(finalStats.expectedModel)}\n`) +
           chalk.white(`Dimensions: ${chalk.green(finalStats.expectedDimensions)}`),
