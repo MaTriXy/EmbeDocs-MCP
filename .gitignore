@@ -68,3 +68,14 @@ temp/
 
 # Downloaded repositories (auto-created during indexing)
 .repos/
+
+# Memory and Planning Files  
+CLAUDE.md
+IMPLEMENTATION_PLAN_*.md
+IMPLEMENTATION_RESULTS.md
+atlas-search-playground-chatbot-starter-main/
+
+# Claude Code specific
+*.claude
+.claude-memory
+memory-*.json

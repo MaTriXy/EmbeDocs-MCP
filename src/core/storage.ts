@@ -137,6 +137,147 @@ export class StorageService {
     
     return collection.aggregate<Document>(pipeline).toArray();
   }
+
+  /**
+   * MMR Vector Search - Maximum Marginal Relevance
+   * Balances relevance and diversity for better results
+   * Inspired by Harry-231's approach and LangChain MMR implementation
+   */
+  async vectorSearchMMR(
+    embedding: number[],
+    options: {
+      limit?: number;
+      fetchK?: number;
+      lambdaMult?: number;
+      filter?: any;
+    } = {}
+  ): Promise<Document[]> {
+    const collection = this.getCollection();
+    const { limit = 10, fetchK = 20, lambdaMult = 0.7, filter } = options;
+    
+    // Step 1: Fetch more candidates than needed (fetchK)
+    const pipeline: any[] = [
+      {
+        $vectorSearch: {
+          index: config.storage.vectorIndexName,
+          path: 'embedding',
+          queryVector: embedding,
+          numCandidates: Math.max(fetchK * 2, 100), // Ensure enough candidates
+          limit: fetchK,
+          ...(filter && { filter })
+        }
+      },
+      {
+        $addFields: {
+          searchScore: { $meta: 'vectorSearchScore' }
+        }
+      },
+      {
+        $project: {
+          embedding: 1, // Keep embeddings for MMR calculation
+          documentId: 1,
+          content: 1,
+          title: 1,
+          product: 1,
+          metadata: 1,
+          searchScore: 1
+        }
+      }
+    ];
+    
+    const candidates = await collection.aggregate<Document>(pipeline).toArray();
+    
+    // Step 2: Apply MMR selection algorithm
+    return this.selectMMRDocuments(candidates, embedding, limit, lambdaMult);
+  }
+
+  /**
+   * MMR selection algorithm
+   * Based on the standard MMR formula: λ * relevance - (1-λ) * max_similarity_to_selected
+   */
+  private selectMMRDocuments(
+    candidates: Document[],
+    _queryEmbedding: number[],
+    limit: number,
+    lambdaMult: number
+  ): Document[] {
+    if (candidates.length === 0) return [];
+    
+    const selected: Document[] = [];
+    const remaining = [...candidates];
+    
+    // Step 1: Select the most relevant document first
+    const firstDoc = remaining.shift()!;
+    selected.push(firstDoc);
+
+    // Step 2: Iteratively select documents using MMR
+    while (selected.length < limit && remaining.length > 0) {
+      let bestDoc: Document | null = null;
+      let bestScore = -Infinity;
+      let bestIndex = -1;
+
+      for (let i = 0; i < remaining.length; i++) {
+        const candidate = remaining[i];
+        
+        // Calculate relevance score (already from vector search)
+        const relevanceScore = (candidate as any).searchScore || 0;
+        
+        // Calculate max similarity to already selected documents
+        let maxSimilarity = 0;
+        for (const selectedDoc of selected) {
+          if (selectedDoc.embedding && candidate.embedding) {
+            const similarity = this.cosineSimilarity(
+              candidate.embedding,
+              selectedDoc.embedding
+            );
+            maxSimilarity = Math.max(maxSimilarity, similarity);
+          }
+        }
+        
+        // MMR score: λ * relevance - (1-λ) * max_similarity
+        const mmrScore = lambdaMult * relevanceScore - (1 - lambdaMult) * maxSimilarity;
+        
+        if (mmrScore > bestScore) {
+          bestScore = mmrScore;
+          bestDoc = candidate;
+          bestIndex = i;
+        }
+      }
+      
+      if (bestDoc) {
+        selected.push(bestDoc);
+        remaining.splice(bestIndex, 1);
+      } else {
+        break;
+      }
+    }
+    
+    // Remove embeddings from final results to save bandwidth
+    return selected.map(doc => {
+      const { embedding: _, ...docWithoutEmbedding } = doc;
+      return docWithoutEmbedding as Document;
+    });
+  }
+
+  /**
+   * Calculate cosine similarity between two vectors
+   */
+  private cosineSimilarity(a: number[], b: number[]): number {
+    if (a.length !== b.length) return 0;
+    
+    let dotProduct = 0;
+    let normA = 0;
+    let normB = 0;
+    
+    for (let i = 0; i < a.length; i++) {
+      dotProduct += a[i] * b[i];
+      normA += a[i] * a[i];
+      normB += b[i] * b[i];
+    }
+    
+    const magnitude = Math.sqrt(normA) * Math.sqrt(normB);
+    return magnitude === 0 ? 0 : dotProduct / magnitude;
+  }
   
   /**
    * Keyword search using MongoDB Atlas Search

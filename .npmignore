@@ -45,3 +45,15 @@ mcp.json
 # MongoDB docs (if any get downloaded)
 mongodb-docs/
 mongodb-docs-repos/
+.repos/
+
+# Memory and Planning Files (not needed in npm package)
+CLAUDE.md
+IMPLEMENTATION_PLAN_*.md  
+IMPLEMENTATION_RESULTS.md
+atlas-search-playground-chatbot-starter-main/
+
+# Claude Code specific
+*.claude
+.claude-memory
+memory-*.json

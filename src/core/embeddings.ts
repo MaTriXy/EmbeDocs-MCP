@@ -38,12 +38,23 @@ export class EmbeddingService {
   async embedDocuments(texts: string[]): Promise<EmbeddingResult[]> {
     if (texts.length === 0) return [];
     
-    // voyage-context-3 requires ALL texts to be processed together for context
+    // voyage-context-3 requires smaller batches due to 32,000 token limit
     // Documentation: voyage-ai/langchain-voyageai/libs/voyageai/langchain_voyageai/embeddings.py
     if (config.embedding.model.includes('context')) {
-      // For context models, process all texts together
-      const results = await this.processContextBatch(texts, 'document');
-      return results;
+      // For context models, use VERY small batches to stay under token limit
+      const maxContextBatchSize = 1; // Process one chunk at a time for safety
+      const batches = this.createBatches(texts, maxContextBatchSize);
+      const allResults: EmbeddingResult[] = [];
+      
+      for (const batch of batches) {
+        const results = await this.processContextBatch(batch, 'document');
+        allResults.push(...results);
+        
+        // Rate limiting from config
+        await this.delay(config.embedding.rateLimit);
+      }
+      
+      return allResults;
     } else {
       // For non-context models, batch normally
       const batches = this.createBatches(texts, config.embedding.maxBatchSize);

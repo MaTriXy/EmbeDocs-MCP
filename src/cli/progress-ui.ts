@@ -138,8 +138,76 @@ const getHTML = (data: any) => `
       background: #d4edda;
       color: #155724;
     }
+    .keep-awake {
+      background: #e8f5e8;
+      border: 2px solid #28a745;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .awake-button {
+      background: #28a745;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: all 0.3s ease;
+    }
+    .awake-button:hover {
+      background: #218838;
+      transform: translateY(-2px);
+    }
+    .awake-button.active {
+      background: #dc3545;
+    }
+    .awake-status {
+      font-size: 14px;
+      color: #666;
+      margin-top: 10px;
+    }
   </style>
   <script>
+    let wakeLock = null;
+    let isAwake = false;
+    
+    async function toggleKeepAwake() {
+      const button = document.getElementById('awakeButton');
+      const status = document.getElementById('awakeStatus');
+      
+      try {
+        if (!isAwake) {
+          // Request wake lock
+          wakeLock = await navigator.wakeLock.request('screen');
+          isAwake = true;
+          button.textContent = '🟢 Mac is Awake - Click to Allow Sleep';
+          button.classList.add('active');
+          status.textContent = '✅ Screen will stay awake while indexing runs';
+          
+          wakeLock.addEventListener('release', () => {
+            isAwake = false;
+            button.textContent = '😴 Keep Mac Awake During Indexing';
+            button.classList.remove('active');
+            status.textContent = '💤 Mac can sleep normally';
+          });
+        } else {
+          // Release wake lock
+          if (wakeLock) {
+            await wakeLock.release();
+            wakeLock = null;
+          }
+        }
+      } catch (err) {
+        console.error('Wake Lock API error:', err);
+        status.textContent = '❌ Wake Lock not supported in this browser';
+      }
+    }
+    
+    // Auto-refresh every 5 seconds
     setTimeout(() => location.reload(), 5000);
   </script>
 </head>
@@ -151,6 +219,17 @@ const getHTML = (data: any) => `
     <div class="status ${data.isComplete ? 'complete' : 'indexing'}">
       ${data.isComplete ? '✅ Indexing Complete!' : '⏳ Indexing in progress...'}
     </div>
+    
+    ${!data.isComplete ? `
+    <div class="keep-awake">
+      <div>💻 <strong>Long Process Alert!</strong></div>
+      <div style="margin: 10px 0; color: #666;">Estimated ${data.estimatedTime} remaining - Keep your Mac awake!</div>
+      <button id="awakeButton" class="awake-button" onclick="toggleKeepAwake()">
+        😴 Keep Mac Awake During Indexing
+      </button>
+      <div id="awakeStatus" class="awake-status">Click to prevent Mac from sleeping</div>
+    </div>
+    ` : ''}
     
     <div class="stats">
       <div class="stat">
@@ -219,16 +298,17 @@ app.get('/', async (_req, res) => {
       count: repoCounts[repo.id] || 0
     }));
     
-    const expectedTotal = 10600; // Actual: 10,596
+    const expectedTotal = 10596; // Correct count from 5 repositories combined
     const progress = Math.min(100, Math.round((totalDocs / expectedTotal) * 100));
     const isComplete = progress >= 100;
     
-    // Estimate time remaining (rough estimate)
-    const docsPerMinute = 200;
+    // More accurate time estimation based on Voyage AI rate limits
+    const docsPerMinute = 60; // Conservative: 1 doc/second due to batching + rate limits
     const remaining = Math.max(0, expectedTotal - totalDocs);
     const minutesLeft = Math.ceil(remaining / docsPerMinute);
     const estimatedTime = isComplete ? 'Complete!' : 
-      minutesLeft > 60 ? `${Math.floor(minutesLeft/60)}h ${minutesLeft%60}m` : 
+      minutesLeft > 120 ? `${Math.floor(minutesLeft/60)}h ${minutesLeft%60}m` : 
+      minutesLeft > 60 ? `${Math.floor(minutesLeft/60)}h ${minutesLeft%60}m` :
       `${minutesLeft} min`;
     
     const data = {

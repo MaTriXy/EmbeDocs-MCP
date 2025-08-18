@@ -10,6 +10,7 @@ import { createHash } from 'crypto';
 import { config } from '../config/index.js';
 import { EmbeddingService } from './embeddings.js';
 import { StorageService, Document } from './storage.js';
+import { AdvancedSemanticChunker } from './semantic-chunker.js';
 
 export interface IndexingProgress {
   current: number;
@@ -21,11 +22,13 @@ export interface IndexingProgress {
 export class Indexer {
   private embeddingService: EmbeddingService;
   private storageService: StorageService;
+  private advancedChunker: AdvancedSemanticChunker;
   private progressCallback?: (progress: IndexingProgress) => void;
   
   constructor() {
     this.embeddingService = EmbeddingService.getInstance();
     this.storageService = StorageService.getInstance();
+    this.advancedChunker = new AdvancedSemanticChunker();
   }
   
   /**
@@ -302,19 +305,30 @@ export class Indexer {
         const ext = path.extname(file).toLowerCase();
         let chunks: string[] = [];
         
-        // Process based on file type
+        // Advanced semantic chunking based on file type and research
         if (ext === '.rst') {
-          // reStructuredText - split by sections
-          const sections = content.split(/\n={3,}\n|\n-{3,}\n|\n\*{3,}\n/);
-          chunks = sections.filter(s => s.trim().length > 100);
+          // reStructuredText - gradient method works well for structured docs
+          chunks = await this.advancedChunker.chunkContent(content, 'gradient');
         } else if (['.md', '.markdown', '.mdx'].includes(ext)) {
-          // Markdown - split by headers
-          const sections = content.split(/\n#{1,3}\s/);
-          chunks = sections.filter(s => s.trim().length > 100);
+          // Markdown - interquartile method optimal for technical docs (41.71 score)
+          chunks = await this.advancedChunker.chunkContent(content, 'interquartile');
+        } else if (ext === '.txt') {
+          // Plain text - auto-select based on content analysis
+          chunks = await this.advancedChunker.chunkContent(content, 'auto');
         } else {
-          // Default chunking
-          chunks = this.chunkContent(content);
+          // Default - hybrid approach for unknown formats
+          chunks = await this.advancedChunker.chunkContent(content, 'hybrid');
         }
+
+        // Filter chunks with voyage-context-3 token limit constraints
+        // Based on Harry-231's successful approach: min_chunk_size=100, no artificial max
+        // TRUST THE SEMANTIC CHUNKER - it already filtered properly
+        // Don't double-filter here as it causes data loss!
+        // The semantic chunker already handles token limits and size constraints
+
+        // Log chunking performance metrics
+        const metrics = this.advancedChunker.getMetrics();
+        console.log(`📊 Chunking metrics for ${path.basename(file)}: ${chunks.length} chunks, avg size: ${Math.round(metrics.averageChunkSize)}`)
         
         // Create documents from chunks
         chunks.forEach((chunk, idx) => {
@@ -342,36 +356,7 @@ export class Indexer {
     return documents;
   }
   
-  /**
-   * Chunk content with overlap
-   */
-  private chunkContent(content: string): string[] {
-    const chunks: string[] = [];
-    const { chunkSize, chunkOverlap } = config.indexing;
-    
-    const sentences = content.match(/[^.!?]+[.!?]+/g) || [content];
-    let currentChunk = '';
-    let overlap = '';
-    
-    for (const sentence of sentences) {
-      if (currentChunk.length + sentence.length > chunkSize && currentChunk) {
-        chunks.push(overlap + currentChunk);
-        
-        // Keep last part as overlap
-        const words = currentChunk.split(' ');
-        overlap = words.slice(-Math.floor(chunkOverlap / 10)).join(' ') + ' ';
-        currentChunk = sentence;
-      } else {
-        currentChunk += ' ' + sentence;
-      }
-    }
-    
-    if (currentChunk.trim()) {
-      chunks.push(overlap + currentChunk);
-    }
-    
-    return chunks.map(c => c.trim()).filter(c => c.length > 100);
-  }
+  // Old chunking method removed - now using AdvancedSemanticChunker
   
   /**
    * Update progress
@@ -383,10 +368,25 @@ export class Indexer {
   }
   
   /**
-   * Get statistics
+   * Get statistics with chunking performance metrics
    */
   async getStats() {
     await this.storageService.connect();
-    return this.storageService.getStats();
+    const baseStats = await this.storageService.getStats();
+    
+    // Add chunking performance metrics
+    const chunkingMetrics = this.advancedChunker.getMetrics();
+    
+    return {
+      ...baseStats,
+      chunking: {
+        totalRequests: chunkingMetrics.totalRequests,
+        averageChunkSize: Math.round(chunkingMetrics.averageChunkSize),
+        semanticBoundariesFound: chunkingMetrics.semanticBoundaries,
+        fallbackUsageRate: chunkingMetrics.totalRequests > 0 
+          ? (chunkingMetrics.fallbackUsage / chunkingMetrics.totalRequests * 100).toFixed(1) + '%'
+          : '0%'
+      }
+    };
   }
 }

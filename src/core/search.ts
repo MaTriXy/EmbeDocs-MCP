@@ -97,6 +97,53 @@ export class SearchService {
       metadata: doc.metadata
     }));
   }
+
+  /**
+   * MMR Vector Search - Maximum Marginal Relevance
+   * Balances relevance and diversity for superior results
+   * Based on Harry-231's approach: +21.2% retrieval accuracy improvement
+   * 
+   * @param query - Search query string
+   * @param options - MMR configuration options
+   */
+  async mmrVectorSearch(
+    query: string, 
+    options: {
+      limit?: number;
+      fetchK?: number;
+      lambdaMult?: number;
+      filter?: any;
+    } = {}
+  ): Promise<SearchResult[]> {
+    await this.storageService.connect();
+    
+    // Use config defaults if not provided
+    const mmrOptions = {
+      limit: options.limit || config.search.mmr.defaultLimit,
+      fetchK: options.fetchK || config.search.mmr.fetchK,
+      lambdaMult: options.lambdaMult || config.search.mmr.lambdaMult,
+      filter: options.filter
+    };
+    
+    // Generate query embedding
+    const embeddingResult = await this.embeddingService.embedQuery(query);
+    
+    // Perform MMR vector search
+    const results = await this.storageService.vectorSearchMMR(
+      embeddingResult.normalized,
+      mmrOptions
+    );
+    
+    // Map to SearchResult
+    return results.map(doc => ({
+      documentId: doc.documentId,
+      content: doc.content,
+      score: (doc as any).searchScore || 0,
+      title: doc.title,
+      product: doc.product,
+      metadata: doc.metadata
+    }));
+  }
   
   /**
    * Reciprocal Rank Fusion (RRF) - Standard hybrid search algorithm
@@ -219,7 +266,8 @@ export class SearchService {
         reranker: config.search.reranker,
         minVectorScore: config.search.minVectorScore,
         vectorWeight: config.search.vectorWeight,
-        keywordWeight: config.search.keywordWeight
+        keywordWeight: config.search.keywordWeight,
+        mmr: config.search.mmr
       }
     };
   }
