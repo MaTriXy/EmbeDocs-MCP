@@ -1,6 +1,6 @@
 {
   "name": "mongodocs-mcp",
-  "version": "10.1.1",
+  "version": "10.1.3",
   "description": "Optimized MongoDB MCP with 2-tool architecture: RRF hybrid + MMR advanced search. Features smart indexing, voyage-context-3 embeddings, and 7.5x speed optimization for Claude/Cursor.",
   "type": "module",
   "main": "dist/index.js",

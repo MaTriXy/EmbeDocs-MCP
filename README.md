@@ -208,4 +208,4 @@ MIT License - see LICENSE file
 
 - **Issues:** [GitHub Issues](https://github.com/romiluz/mongodocs-mcp/issues)
 - **Author:** Rom Iluz
-- **Version:** 10.1.1 - Production-Ready Vector Search MCP
+- **Version:** 10.1.3 - Production-Ready Vector Search MCP

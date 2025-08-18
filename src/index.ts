@@ -27,7 +27,7 @@ class MongoDBSemanticMCP {
     this.server = new Server(
       {
         name: 'mongodocs-mcp',
-        version: '10.1.1', // Optimized 2-tool architecture + production fixes
+        version: '10.1.3', // Final production release with developer documentation
       },
       {
         capabilities: {
