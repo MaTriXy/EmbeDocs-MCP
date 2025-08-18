@@ -1,16 +1,17 @@
 # MongoDB Documentation MCP
 
-**Production-ready MongoDB semantic search for Claude and Cursor IDEs**
+MongoDB semantic documentation search server implementing the Model Context Protocol (MCP) for IDE integration with Claude and Cursor.
 
-Provides instant access to MongoDB documentation through advanced semantic search with voyage-context-3 embeddings and MongoDB Atlas Vector Search.
+Transforms MongoDB documentation into searchable vector embeddings using Voyage AI's voyage-context-3 model (1024 dimensions) and MongoDB Atlas Vector Search, enabling natural language queries against comprehensive MongoDB documentation corpus.
 
-## Core Features
+## Technical Architecture
 
-- **Smart Indexing**: Git-based change detection - only processes what changed
-- **Advanced Search**: Vector + keyword hybrid with MMR (Maximum Marginal Relevance) 
-- **Production-Grade**: Built on MongoDB Atlas Vector Search with 7.5x speed optimization
-- **Comprehensive Coverage**: 10,596 documents from 5 curated MongoDB repositories
-- **Always Current**: Automated incremental updates track git commits
+- **Embedding Model**: voyage-context-3 (1024-dimensional vectors) - optimized for technical documentation
+- **Vector Database**: MongoDB Atlas Vector Search with cosine similarity indexing
+- **Search Algorithms**: RRF (Reciprocal Rank Fusion) hybrid + MMR (Maximum Marginal Relevance)
+- **Smart Indexing**: Git commit hash tracking with incremental processing
+- **Document Coverage**: 10,596 indexed documents from 5 MongoDB repositories
+- **MCP Protocol**: Clean 2-tool architecture following Context7 patterns
 
 ## Prerequisites
 
@@ -83,7 +84,7 @@ Restart your IDE after configuration.
 
 ## Usage
 
-Ask MongoDB questions directly in your IDE:
+Query MongoDB documentation using natural language through your IDE:
 
 ```
 How do I implement vector search in MongoDB?
@@ -92,10 +93,9 @@ What's the syntax for compound indexes?
 How to optimize aggregation performance?
 ```
 
-The system provides three search modes:
-- **Vector Search**: Semantic similarity using voyage-context-3
-- **Hybrid Search**: Combines vector + keyword with RRF
-- **MMR Search**: Maximizes relevance while ensuring diversity
+**MCP Tool Architecture**:
+- `mongodb-search`: RRF hybrid algorithm (vector + keyword fusion) - primary search method
+- `mongodb-mmr-search`: Maximum Marginal Relevance algorithm - diverse result optimization
 
 ## Commands
 
@@ -107,15 +107,15 @@ mongodocs-index stats     # Show statistics
 mongodocs-index test      # Test embedding service
 ```
 
-## Smart Indexing System
+## Incremental Indexing
 
-**First Run:**
+**Initial Processing:**
 ```
 🔄 Smart indexing - checking for repository changes...
 🆕 MongoDB Official Documentation first time indexing...
 ```
 
-**Subsequent Runs:**
+**Delta Updates:**
 ```  
 🔄 Smart indexing - checking for repository changes...
 ✅ MongoDB Official Documentation up to date (a1b2c3d4), skipping...
@@ -123,39 +123,55 @@ mongodocs-index test      # Test embedding service
 ✅ Smart update complete!
 ```
 
-The system stores git commit hashes and only processes changed files, eliminating unnecessary re-indexing.
+Git commit hash comparison enables differential processing - only changed documents trigger re-embedding and storage operations.
 
-## Architecture
+## Implementation Details
 
-**Embeddings:** voyage-context-3 (1024 dimensions)  
-**Database:** MongoDB Atlas Vector Search  
-**Search:** RRF hybrid with MMR diversity selection  
-**Indexing:** Advanced semantic chunking with token validation  
-**Updates:** Git commit hash tracking for incremental processing  
+**Vector Embedding Pipeline:**
+- Model: voyage-context-3 (1024 dimensions, optimized for documentation)
+- Chunking: Semantic content splitting (100-2000 characters)
+- Normalization: Cosine similarity with L2 normalization
 
-**Performance Optimizations:**
-- MongoDB Atlas 40-candidate search (7.5x faster than default 300)
-- Emergency token splitting for large documents (32K context limit)
-- Batch processing with graceful error recovery
-- Smart chunk sizing (100-2500 characters) prevents data loss
+**MongoDB Atlas Configuration:**
+- Vector Index: Cosine similarity, 40 numCandidates (7.5x speed optimization)
+- Text Index: Lucene analyzers for keyword search
+- Storage: Bulk upsert operations with graceful error handling
 
-## Indexed Repositories
+**Search Algorithm Implementation:**
+- **RRF (Reciprocal Rank Fusion)**: Combined vector + keyword ranking with tuned weights
+- **MMR (Maximum Marginal Relevance)**: Diversity optimization using cosine similarity calculations
+- **Performance**: Sub-500ms response times with optimized candidate selection
 
-1. **MongoDB Official Docs** - Complete documentation
-2. **GenAI Showcase** - Vector search examples  
-3. **Chatbot Starter** - RAG implementations
-4. **Driver Examples** - Language-specific code
-5. **Community Tutorials** - Best practices
+**Data Processing:**
+- Git-based incremental updates prevent redundant processing  
+- Token validation ensures embedding model compatibility
+- Batch processing with p-limit concurrency control
 
-**Total Coverage:** 10,596 documents, ~200MB storage
+## Document Corpus
 
-## Performance
+**Repository Sources:**
+1. `mongodb/docs` - Official MongoDB documentation
+2. `mongodb/docs-generative-ai-showcase` - Vector search examples  
+3. `mongodb/atlas-search-playground-chatbot-starter` - RAG implementations
+4. `mongodb/drivers-examples` - Language-specific implementations
+5. `mongodb-developer/code-examples` - Community patterns
 
-- **Initial indexing:** 10-15 minutes
-- **Smart updates:** 30 seconds - 2 minutes  
-- **Search latency:** <500ms
-- **Memory usage:** <100MB during indexing
-- **Storage:** ~200MB in MongoDB Atlas
+**Processing Statistics:**
+- Documents: 10,596 indexed chunks
+- Storage: ~200MB in MongoDB Atlas
+- Coverage: Complete MongoDB ecosystem documentation
+
+## Performance Metrics
+
+**Indexing Operations:**
+- Initial processing: 10-15 minutes (10,596 documents)
+- Incremental updates: 30 seconds - 2 minutes  
+- Memory utilization: <100MB during batch processing
+
+**Search Performance:**
+- Query latency: <500ms (99th percentile)
+- Vector search: 40 candidates vs 300 default (7.5x optimization)
+- Storage footprint: ~200MB in MongoDB Atlas
 
 ## Troubleshooting
 
@@ -192,4 +208,4 @@ MIT License - see LICENSE file
 
 - **Issues:** [GitHub Issues](https://github.com/romiluz/mongodocs-mcp/issues)
 - **Author:** Rom Iluz
-- **Version:** 10.0.3
+- **Version:** 10.1.1 - Production-Ready Vector Search MCP

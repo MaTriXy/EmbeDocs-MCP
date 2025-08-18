@@ -1,7 +1,7 @@
 {
   "name": "mongodocs-mcp",
-  "version": "10.1.0",
-  "description": "Production-ready MongoDB semantic search for Claude/Cursor. Features smart indexing with git change detection, voyage-context-3 embeddings, MMR search, and 7.5x speed optimization.",
+  "version": "10.1.1",
+  "description": "Optimized MongoDB MCP with 2-tool architecture: RRF hybrid + MMR advanced search. Features smart indexing, voyage-context-3 embeddings, and 7.5x speed optimization for Claude/Cursor.",
   "type": "module",
   "main": "dist/index.js",
   "bin": {

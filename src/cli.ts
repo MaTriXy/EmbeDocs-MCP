@@ -67,7 +67,7 @@ async function main() {
         spinner.succeed('Database cleaned');
         break;
         
-      case 'stats':
+      case 'stats': {
         spinner.start('Getting statistics...');
         const stats = await indexer.getStats();
         spinner.succeed('Statistics retrieved');
@@ -78,8 +78,9 @@ async function main() {
         console.log(chalk.white(`  Models: ${stats.models.join(', ')}`));
         console.log(chalk.white(`  Expected: ${stats.expectedModel} (${stats.expectedDimensions}d)`));
         break;
+      }
         
-      case 'test':
+      case 'test': {
         // Test embedding service
         spinner.start('Testing embedding service...');
         const embedService = EmbeddingService.getInstance();
@@ -92,8 +93,9 @@ async function main() {
         console.log(chalk.white(`  Expected: ${config.embedding.dimensions}`));
         console.log(chalk.white(`  Match: ${testResult.dimensions === config.embedding.dimensions ? '✅' : '❌'}`));
         break;
+      }
         
-      case 'update':
+      case 'update': {
         // Legacy command - now just calls smart index()
         spinner.start('Smart indexing (legacy update command)...');
         await indexer.update();
@@ -105,8 +107,9 @@ async function main() {
         console.log(chalk.white(`  Total Documents: ${updateStats.totalDocuments}`));
         console.log(chalk.white(`  Products: ${updateStats.products.join(', ')}`));
         break;
+      }
         
-      case 'rebuild':
+      case 'rebuild': {
         // Force full rebuild - when things go wrong
         spinner.start('Force rebuilding everything...');
         await indexer.rebuild();
@@ -118,8 +121,9 @@ async function main() {
         console.log(chalk.white(`  Total Documents: ${rebuildStats.totalDocuments}`));
         console.log(chalk.white(`  Products: ${rebuildStats.products.join(', ')}`));
         break;
+      }
         
-      default:
+      default: {
         // Default: smart indexing (checks for changes first)
         spinner.start('Smart indexing (checking for changes)...');
         await indexer.index();
@@ -142,6 +146,7 @@ async function main() {
         );
         
         console.log(successBox);
+      }
     }
     
     process.exit(0);
