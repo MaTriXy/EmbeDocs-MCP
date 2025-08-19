@@ -28,7 +28,7 @@ const getHTML = (data: any) => `
 <!DOCTYPE html>
 <html>
 <head>
-  <title>MongoDB Docs Indexing Progress</title>
+  <title>EmbeDocs Repository Indexing Progress</title>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
@@ -213,7 +213,7 @@ const getHTML = (data: any) => `
 </head>
 <body>
   <div class="container">
-    <h1>🚀 MongoDB Docs Indexing</h1>
+    <h1>🚀 EmbeDocs Repository Indexing</h1>
     <div class="subtitle">Real-time progress monitoring</div>
     
     <div class="status ${data.isComplete ? 'complete' : 'indexing'}">
@@ -286,7 +286,7 @@ app.get('/', async (_req, res) => {
     
     // Expected repos (updated with actual counts from our test)
     const expectedRepos = [
-      { id: 'docs', name: 'MongoDB Official Docs', icon: '📚', expected: 9800 },
+      { id: 'docs', name: 'Repository Documents', icon: '📚', expected: 9800 },
       { id: 'genai', name: 'GenAI Showcase (3.9k⭐)', icon: '🤖', expected: 40 },
       { id: 'rag', name: 'MongoDB Chatbot (RAG)', icon: '💬', expected: 61 },
       { id: 'tutorials', name: 'Vector Search Notebooks', icon: '📓', expected: 3 },

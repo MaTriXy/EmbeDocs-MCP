@@ -56,11 +56,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/romiluz/embedocs-mcp.git"
+    "url": "git+https://github.com/romiluz13/EmbeDocs-MCP.git"
   },
-  "homepage": "https://github.com/romiluz/embedocs-mcp#readme",
+  "homepage": "https://github.com/romiluz13/EmbeDocs-MCP#readme",
   "bugs": {
-    "url": "https://github.com/romiluz/embedocs-mcp/issues"
+    "url": "https://github.com/romiluz13/EmbeDocs-MCP/issues"
   },
   "engines": {
     "node": ">=18.0.0"

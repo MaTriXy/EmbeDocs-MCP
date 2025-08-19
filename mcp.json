@@ -10,8 +10,8 @@
   "homepage": "https://github.com/romiluz/embedocs-mcp#readme",
   "tools": [
     {
-      "name": "search_mongodb_docs",
-      "description": "Search MongoDB documentation using natural language",
+      "name": "mongodb-search",
+      "description": "Search indexed repositories using semantic search",
       "parameters": {
         "type": "object",
         "properties": {
@@ -36,8 +36,8 @@
       }
     },
     {
-      "name": "explain_mongodb_concept",
-      "description": "Get detailed explanation of MongoDB concepts",
+      "name": "mongodb-mmr-search",
+      "description": "Advanced search with maximum marginal relevance",
       "parameters": {
         "type": "object",
         "properties": {
@@ -56,8 +56,8 @@
       }
     },
     {
-      "name": "find_similar_docs",
-      "description": "Find documents similar to provided content",
+      "name": "mongodb-status",
+      "description": "Get system and database status",
       "parameters": {
         "type": "object",
         "properties": {
@@ -75,8 +75,6 @@
       }
     },
     {
-      "name": "get_search_status",
-      "description": "Get status of the MongoDB documentation search system",
       "parameters": {
         "type": "object",
         "properties": {}

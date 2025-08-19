@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * MongoDB Docs MCP Server - OPTIMIZED 2-TOOL ARCHITECTURE  
+ * EmbeDocs MCP Server - OPTIMIZED 2-TOOL ARCHITECTURE  
  * Primary: RRF hybrid search | Advanced: MMR algorithm | Status: System health
  */
 
