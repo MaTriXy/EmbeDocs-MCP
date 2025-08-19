@@ -560,4 +560,40 @@ export class StorageService {
       expectedModel: config.embedding.model
     };
   }
+
+  /**
+   * Fetch all chunks for a specific file
+   * Used by the fetch-full-context tool to reconstruct complete files
+   */
+  async fetchFileChunks(filename: string, product: string): Promise<Document[]> {
+    const collection = this.getCollection();
+    
+    try {
+      // Find all documents with matching title and product
+      const chunks = await collection.find({
+        title: filename,
+        product: product
+      })
+      .sort({ 
+        'metadata.chunkIndex': 1,  // Sort by chunk index if available
+        documentId: 1  // Secondary sort by document ID
+      })
+      .toArray();
+      
+      console.error(`📄 Found ${chunks.length} chunks for ${filename} in ${product}`);
+      
+      return chunks;
+    } catch (error) {
+      console.error('Error fetching file chunks:', error);
+      throw new Error(`Failed to fetch chunks for ${filename}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Count documents for a specific product
+   */
+  async countByProduct(product: string): Promise<number> {
+    const collection = this.getCollection();
+    return collection.countDocuments({ product });
+  }
 }

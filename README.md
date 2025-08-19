@@ -234,7 +234,7 @@ Your AI now has access to the LATEST documentation! 🎉
 
 ### 🔌 **Universal AI Integration**
 - **MCP Protocol**: Works with Claude Desktop, Cursor IDE, any MCP-compatible AI
-- **Three Search Tools**: Primary hybrid search, advanced MMR search, system status
+- **Four Powerful Tools**: Primary hybrid search, advanced MMR search, full context fetcher, system status
 - **Production Ready**: Handles 14,880+ documents with 0 failures
 
 ---
@@ -311,16 +311,40 @@ embedocs progress
 embedocs status
 ```
 
-### **Smart Search Strategies**
+### **Smart Search Workflow with Full Context**
+
+**CRITICAL: Search returns CHUNKS, not complete files!**  
+Always use the two-step workflow for complete understanding:
+
 ```bash
-# For broad understanding - use hybrid search (default)
+# Step 1: Search for relevant files
+"How does the chatbot generate responses?"
+→ mongodb-search finds: generate-response.js (partial chunk showing ~500 chars)
+
+# Step 2: Get COMPLETE file content
+→ mongodb-fetch-full-context("generate-response.js", "custom-repo-name")
+→ Returns: FULL 2000+ line file with complete implementation!
+```
+
+**The Four Tools:**
+1. **mongodb-search**: RRF hybrid search - best for general queries
+2. **mongodb-mmr-search**: Maximum Marginal Relevance - best for diverse results  
+3. **mongodb-fetch-full-context**: Gets COMPLETE file content after search
+4. **mongodb-status**: System health and statistics
+
+**Smart Search Strategies:**
+```bash
+# For broad understanding - use hybrid search + fetch full context
 "How does React handle state management?"
+→ Search finds relevant files → Fetch complete implementations
 
-# For comprehensive research - use MMR search
-"Find ALL approaches to database optimization" 
+# For comprehensive research - use MMR search + fetch full context
+"Find ALL approaches to database optimization"
+→ MMR finds diverse approaches → Fetch full files for each
 
-# For conceptual questions - use pure vector search  
-"What are the design patterns in this architecture?"
+# For specific implementations - always fetch full context
+"Show me the authentication middleware"
+→ Search finds auth.js → Fetch complete middleware code
 ```
 
 ---

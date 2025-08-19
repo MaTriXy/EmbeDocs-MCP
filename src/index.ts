@@ -50,7 +50,27 @@ class EmbedocsMCP {
       tools: [
         {
           name: 'mongodb-search',
-          description: 'PRIMARY MongoDB search using RRF hybrid algorithm (vector + keyword fusion). BEST for: general queries, broad topics, mixed content types. Provides optimal balance of relevance and performance for most use cases.',
+          description: `PRIMARY search tool - Use this FIRST for any documentation query.
+
+PURPOSE: Find relevant documentation chunks using RRF hybrid algorithm (vector + keyword fusion).
+
+⚠️ CRITICAL LIMITATION: Returns CHUNKS (100-2000 chars), NOT complete files!
+⚠️ MANDATORY NEXT STEP: ALWAYS use mongodb-fetch-full-context for complete files!
+
+WHEN TO USE:
+• User asks about ANY topic in the indexed documentation
+• Starting point for ALL searches - use this before other tools
+• General queries, broad topics, mixed content types
+
+REQUIRED WORKFLOW:
+1. ALWAYS start with mongodb-search to find relevant files
+2. IMMEDIATELY use mongodb-fetch-full-context on important results
+3. NEVER present truncated chunks as complete answers
+
+EXAMPLE: User asks "How does authentication work?"
+→ You MUST: mongodb-search("authentication") 
+→ Then MUST: mongodb-fetch-full-context for EACH relevant file found
+→ Only THEN provide complete answer with full context`,
           inputSchema: {
             type: 'object',
             properties: {
@@ -71,7 +91,29 @@ class EmbedocsMCP {
         },
         {
           name: 'mongodb-mmr-search',
-          description: 'ADVANCED MongoDB search using Maximum Marginal Relevance (MMR) algorithm. BEST for: research tasks, comparative analysis, diverse perspectives, avoiding redundant results. Use when you need maximum diversity (+21.2% improvement over standard search).',
+          description: `ADVANCED search for diverse results - Use when you need VARIETY, not just relevance.
+
+PURPOSE: Find diverse, non-redundant documentation using Maximum Marginal Relevance (MMR).
+
+⚠️ CRITICAL LIMITATION: Returns CHUNKS (100-2000 chars), NOT complete files!
+⚠️ MANDATORY NEXT STEP: ALWAYS use mongodb-fetch-full-context for complete files!
+
+WHEN TO USE:
+• User needs MULTIPLE approaches or implementations
+• Researching different solutions to same problem
+• Avoiding redundant/duplicate information
+• Comparative analysis across different files
+• Finding edge cases and alternatives
+
+REQUIRED WORKFLOW:
+1. Use mongodb-mmr-search for diverse perspectives
+2. IMMEDIATELY use mongodb-fetch-full-context on ALL results
+3. NEVER present truncated chunks as complete answers
+
+EXAMPLE: User asks "Show me different authentication methods"
+→ You MUST: mongodb-mmr-search("authentication methods", lambdaMult: 0.5)
+→ Then MUST: mongodb-fetch-full-context for EACH diverse file found
+→ Present COMPLETE implementations of different approaches`,
           inputSchema: {
             type: 'object',
             properties: {
@@ -105,8 +147,75 @@ class EmbedocsMCP {
           },
         },
         {
+          name: 'mongodb-fetch-full-context',
+          description: `MANDATORY TOOL - ALWAYS use after search to get COMPLETE files!
+
+PURPOSE: Reconstruct COMPLETE file content from chunks. Solves the chunking limitation!
+
+⚠️ CRITICAL INSTRUCTION: You MUST use this tool IMMEDIATELY after ANY search!
+⚠️ NEVER skip this step - chunks are INCOMPLETE and MISLEADING without full context!
+
+WHEN YOU MUST USE THIS TOOL:
+• IMMEDIATELY after mongodb-search finds files
+• IMMEDIATELY after mongodb-mmr-search finds files  
+• For EVERY code file (*.js, *.ts, *.py, *.java, *.md, etc.)
+• When chunks show "..." or appear truncated
+• BEFORE providing ANY code examples to user
+• BEFORE explaining how something works
+
+MANDATORY WORKFLOW:
+1. Search returns filename like "auth.js" → You MUST fetch full content
+2. Use EXACT filename and product from search results
+3. Set removeOverlap: true for clean content
+4. ONLY present full content to user, NEVER chunks
+
+FAILURE TO USE = WRONG ANSWERS:
+• Chunks miss critical parts (system prompts, config, imports)
+• User gets incomplete/broken code
+• Context is lost between chunks
+
+EXAMPLE - THIS IS REQUIRED BEHAVIOR:
+User: "How does authentication work?"
+→ mongodb-search("authentication") finds auth.js
+→ YOU MUST: mongodb-fetch-full-context("auth.js", "product-name")
+→ NOW you have COMPLETE 2000+ line file instead of 500 char chunk!`,
+          inputSchema: {
+            type: 'object',
+            properties: {
+              filename: {
+                type: 'string',
+                description: 'The exact filename (title) from search results',
+              },
+              product: {
+                type: 'string',
+                description: 'The product/repository identifier from search results',
+              },
+              removeOverlap: {
+                type: 'boolean',
+                description: 'Remove overlapping content between chunks (recommended)',
+                default: true,
+              },
+            },
+            required: ['filename', 'product'],
+          },
+        },
+        {
           name: 'mongodb-status',
-          description: 'Get system health and database statistics - shows document count, embedding model status, search configuration, and system readiness',
+          description: `System health check - Use to verify EmbeDocs is working properly.
+
+PURPOSE: Check database connection, document count, and system configuration.
+
+WHEN TO USE:
+• User asks about indexed repositories or documents
+• Troubleshooting search issues
+• Verifying system is operational
+• Before starting a search session (optional)
+
+RETURNS:
+• Total documents indexed
+• List of indexed repositories/products
+• Embedding model configuration
+• System health status`,
           inputSchema: {
             type: 'object',
             properties: {},
@@ -125,6 +234,8 @@ class EmbedocsMCP {
             return await this.handleHybridSearch(args);
           case 'mongodb-mmr-search':
             return await this.handleMMRSearch(args);
+          case 'mongodb-fetch-full-context':
+            return await this.handleFetchFullContext(args);
           case 'mongodb-status':
             return await this.handleStatus();
           default:
@@ -233,6 +344,124 @@ class EmbedocsMCP {
         ],
       };
     }
+  }
+
+  private async handleFetchFullContext(args: any) {
+    try {
+      const { filename, product, removeOverlap = true } = args;
+      
+      console.error(`📄 Fetching full context for: ${filename} from ${product}`);
+      
+      // Connect to database
+      await this.storageService.connect();
+      
+      // Fetch all chunks for this file
+      const chunks = await this.storageService.fetchFileChunks(filename, product);
+      
+      if (!chunks || chunks.length === 0) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `No content found for file: ${filename} in product: ${product}`,
+            },
+          ],
+        };
+      }
+      
+      console.error(`✅ Found ${chunks.length} chunks for ${filename}`);
+      
+      // Sort chunks by their position or sequence (if available)
+      chunks.sort((a, b) => {
+        // Try to sort by chunk index if available in metadata
+        if (a.metadata?.chunkIndex !== undefined && b.metadata?.chunkIndex !== undefined) {
+          return a.metadata.chunkIndex - b.metadata.chunkIndex;
+        }
+        // Otherwise sort by content position if we can detect it
+        return 0; // Keep original order if no sorting info available
+      });
+      
+      // Merge chunks with optional overlap removal
+      let fullContent: string;
+      
+      if (removeOverlap && chunks.length > 1) {
+        fullContent = this.mergeChunksWithOverlapRemoval(chunks);
+      } else {
+        // Simple concatenation
+        fullContent = chunks.map(chunk => chunk.content).join('\n');
+      }
+      
+      // Format the response
+      const response = `# Full Content: ${filename}
+**Product/Repository**: ${product}
+**Total Chunks Merged**: ${chunks.length}
+**Content Length**: ${fullContent.length} characters
+
+---
+
+${fullContent}`;
+      
+      return {
+        content: [
+          {
+            type: 'text',
+            text: response,
+          },
+        ],
+      };
+    } catch (error) {
+      console.error('❌ Fetch full context error:', error);
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `Failed to fetch full context: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          },
+        ],
+      };
+    }
+  }
+
+  private mergeChunksWithOverlapRemoval(chunks: any[]): string {
+    if (chunks.length === 0) return '';
+    if (chunks.length === 1) return chunks[0].content;
+    
+    const merged: string[] = [chunks[0].content];
+    
+    for (let i = 1; i < chunks.length; i++) {
+      const prevChunk = chunks[i - 1].content;
+      const currentChunk = chunks[i].content;
+      
+      // Find overlap between end of previous chunk and start of current chunk
+      const overlapLength = this.findOverlap(prevChunk, currentChunk);
+      
+      if (overlapLength > 0) {
+        // Remove the overlapping part from the current chunk
+        const nonOverlapping = currentChunk.substring(overlapLength);
+        merged.push(nonOverlapping);
+      } else {
+        // No overlap detected, add the full chunk
+        merged.push(currentChunk);
+      }
+    }
+    
+    return merged.join('');
+  }
+
+  private findOverlap(text1: string, text2: string): number {
+    // Find the longest suffix of text1 that is a prefix of text2
+    const maxOverlap = Math.min(text1.length, text2.length, 200); // Limit overlap check to 200 chars
+    
+    for (let overlap = maxOverlap; overlap > 0; overlap--) {
+      const suffix = text1.substring(text1.length - overlap);
+      const prefix = text2.substring(0, overlap);
+      
+      if (suffix === prefix) {
+        return overlap;
+      }
+    }
+    
+    return 0;
   }
 
   private async handleStatus() {
