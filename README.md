@@ -147,7 +147,13 @@ embedocs index https://github.com/langchain-ai/langchain
 npm install -g embedocs-mcp
 ```
 
-### **Step 2: Setup** *(Beautiful Web Interface - 60 seconds)*
+### **Step 2: First Run** *(Auto-launches setup wizard!)*
+```bash
+embedocs
+# ✨ Automatically opens setup wizard on first run!
+```
+
+Or manually run setup anytime:
 ```bash
 embedocs setup
 ```
@@ -169,13 +175,13 @@ embedocs setup
 # First, make sure you have .env file with credentials
 # (created automatically by setup wizard)
 
-# Index specific repos
-embedocs index https://github.com/mongodb/docs
-embedocs index https://github.com/facebook/react
-embedocs index https://github.com/your-company/documentation
+# Index specific repos  
+embedocs-index https://github.com/mongodb/docs
+embedocs-index https://github.com/facebook/react
+embedocs-index https://github.com/your-company/documentation
 
-# Or index all configured repos
-npm run index
+# Or use the shorthand
+embedocs https://github.com/mongodb/docs
 ```
 
 ### **Step 4: Connect to Your AI**
@@ -437,7 +443,8 @@ MIT © [Rom Iluz](https://github.com/romiluz13)
 ### **🎯 Stop Fighting Outdated AI Knowledge**
 
 ```bash
-npm install -g embedocs-mcp && embedocs setup
+npm install -g embedocs-mcp && embedocs
+# Just run 'embedocs' - it auto-launches setup on first run!
 ```
 
 **Give your AI access to current, accurate documentation in 60 seconds**

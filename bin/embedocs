@@ -1,0 +1,76 @@
+#!/usr/bin/env node
+
+/**
+ * EmbeDocs Main CLI - Smart entry point
+ * Automatically launches setup on first run
+ */
+
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import chalk from 'chalk';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Check if this is first run (no .env file)
+const envPath = path.join(process.cwd(), '.env');
+const isFirstRun = !fs.existsSync(envPath);
+
+// Get command from arguments
+const command = process.argv[2];
+
+// If no command and first run, launch setup
+if (!command && isFirstRun) {
+  console.log(chalk.cyan('\n🎉 Welcome to EmbeDocs!\n'));
+  console.log(chalk.yellow('No configuration found in this directory.\n'));
+  console.log(chalk.green('Launching setup wizard to get you started...\n'));
+  
+  // Launch the web setup
+  import('../dist/web/launch.js');
+} else if (!command) {
+  // Show help if no command and already set up
+  console.log(chalk.cyan.bold('\n🧠 EmbeDocs - AI That Actually Knows Your Docs\n'));
+  console.log('Usage: embedocs <command> [options]\n');
+  console.log('Commands:');
+  console.log('  setup                 Launch visual setup wizard');
+  console.log('  index <repo-url>      Index a GitHub repository');
+  console.log('  progress              Monitor indexing progress');
+  console.log('  status                Check system status');
+  console.log('');
+  console.log('Examples:');
+  console.log('  embedocs setup');
+  console.log('  embedocs index https://github.com/mongodb/docs');
+  console.log('  embedocs progress');
+  console.log('');
+  console.log('For more info: https://github.com/romiluz13/EmbeDocs-MCP');
+} else {
+  // Route to appropriate command
+  switch(command) {
+    case 'setup':
+      import('../dist/web/launch.js');
+      break;
+    case 'index':
+      process.argv = [process.argv[0], process.argv[1], ...process.argv.slice(3)];
+      import('../dist/cli.js');
+      break;
+    case 'progress':
+      import('../dist/cli/progress-ui.js');
+      break;
+    case 'status':
+      import('../dist/cli.js').then(module => {
+        // Call status function
+        console.log('Checking EmbeDocs status...');
+      });
+      break;
+    default:
+      // Assume it's a repo URL for indexing
+      if (command.startsWith('http')) {
+        process.argv = [process.argv[0], process.argv[1], command];
+        import('../dist/cli.js');
+      } else {
+        console.error(chalk.red(`Unknown command: ${command}`));
+        console.log('Run "embedocs" for help');
+      }
+  }
+}
