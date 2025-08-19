@@ -1,0 +1,17 @@
+run = "cd landing && npm install && npm run build && npm start"
+entrypoint = "landing/app/page.tsx"
+
+[nix]
+channel = "stable-24_05"
+
+[deployment]
+run = ["sh", "-c", "cd landing && npm install && npm run build && npm start"]
+build = ["sh", "-c", "cd landing && npm install && npm run build"]
+
+[[ports]]
+localPort = 3000
+externalPort = 80
+
+[env]
+NODE_ENV = "production"
+NEXT_TELEMETRY_DISABLED = "1"

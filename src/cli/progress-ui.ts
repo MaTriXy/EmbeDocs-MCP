@@ -12,7 +12,7 @@ import chalk from 'chalk';
 import boxen from 'boxen';
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.EMBEDOCS_PORT || 3333;
 
 // MongoDB connection
 const uri = process.env.MONGODB_URI;

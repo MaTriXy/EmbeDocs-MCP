@@ -140,29 +140,42 @@ embedocs index https://github.com/langchain-ai/langchain
 
 ---
 
-## 🚀 **Quick Start**
+## 🚀 **Quick Start** *(3 Simple Steps)*
 
 ### **Step 1: Install**
 ```bash
 npm install -g embedocs-mcp
 ```
 
-### **Step 2: Setup** *(Visual wizard - 60 seconds)*
+### **Step 2: Setup** *(Beautiful Web Interface - 60 seconds)*
 ```bash
 embedocs setup
 ```
-Opens browser → Get MongoDB Atlas + Voyage AI credentials (both FREE) → Pick documentation to index → Done!
+**🌐 Opens a stunning web interface in your browser!**
+- Visual setup wizard with beautiful 2025 UI design
+- Step-by-step guidance for MongoDB Atlas (FREE)
+- Easy Voyage AI key setup (FREE - 50M tokens/month)
+- Pick from popular repos or add your own
+- All configuration saved automatically to `.env`
 
 ### **Step 3: Index Documentation**
+
+**Option A: Using Web Interface** (Recommended)
+- The setup wizard will offer to start indexing automatically
+- Select repos and click "Start Indexing"
+
+**Option B: Manual Command Line**
 ```bash
-# Index latest MongoDB docs
+# First, make sure you have .env file with credentials
+# (created automatically by setup wizard)
+
+# Index specific repos
 embedocs index https://github.com/mongodb/docs
-
-# Index React documentation  
 embedocs index https://github.com/facebook/react
-
-# Index your own docs
 embedocs index https://github.com/your-company/documentation
+
+# Or index all configured repos
+npm run index
 ```
 
 ### **Step 4: Connect to Your AI**
@@ -264,12 +277,20 @@ embedocs index https://github.com/kubernetes/kubernetes
 embedocs index https://github.com/docker/cli
 ```
 
-### **Monitor Indexing Progress**
+### **Monitor Indexing Progress** 
 ```bash
-# Real-time dashboard (keeps computer awake during indexing!)
+# 🌐 Opens beautiful web dashboard at http://localhost:3333
 embedocs progress
+```
+**Features:**
+- Real-time progress bars and statistics
+- "Keep Mac Awake" button (prevents sleep during long indexing)
+- Shows all repositories being indexed
+- Auto-refreshes every 5 seconds
+- Estimated time remaining
 
-# Quick status check
+```bash
+# Quick CLI status check (no browser)
 embedocs status
 ```
 
@@ -364,6 +385,26 @@ MongoDB Atlas (Vector + Text Indexes)
 - Company coding standards and best practices
 
 ---
+
+## 🔧 **Troubleshooting**
+
+### **Setup Issues**
+- **"embedocs: command not found"**: Run `npm install -g embedocs-mcp` with sudo if needed
+- **Web interface doesn't open**: Navigate manually to http://localhost:3333
+- **MongoDB connection fails**: Make sure to add `0.0.0.0/0` to Network Access in Atlas
+
+### **Environment Configuration**
+If the web setup doesn't work, create `.env` file manually:
+```bash
+# Create .env in your project directory
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/
+VOYAGE_API_KEY=pa-your-api-key-here
+```
+
+### **Indexing Issues**
+- **Rate limit errors**: Voyage AI free tier is limited to 2000 RPM - indexing automatically handles this
+- **"0 chunks" for some files**: Normal for very small files
+- **Process seems stuck**: Check `embedocs progress` for real-time status
 
 ## 🤝 **Contributing**
 
