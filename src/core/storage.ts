@@ -382,8 +382,9 @@ export class StorageService {
         console.log(`✅ Vector index already exists and is READY`);
       }
     } catch (error) {
-      console.error('❌ CRITICAL: Could not create vector index:', error);
-      throw new Error(`Vector index creation failed: ${error}`);
+      console.error('⚠️ Warning: Could not create vector index:', error);
+      console.warn('The MCP will continue but vector search may not work until indexes are created.');
+      // Don't throw - allow MCP to connect even without indexes
     }
   }
   
@@ -409,7 +410,7 @@ export class StorageService {
       await new Promise(resolve => setTimeout(resolve, 5000));
     }
     
-    throw new Error(`Index ${indexName} not ready after ${maxWaitTime / 1000} seconds`);
+    console.warn(`⚠️ Index ${indexName} not ready after ${maxWaitTime / 1000} seconds. Continuing anyway...`);
   }
   
   /**
@@ -476,8 +477,9 @@ export class StorageService {
         console.log(`✅ Text index already exists and is READY`);
       }
     } catch (error) {
-      console.error('❌ CRITICAL: Could not create text index:', error);
-      throw new Error(`Text index creation failed: ${error}`);
+      console.error('⚠️ Warning: Could not create text index:', error);
+      console.warn('The MCP will continue but keyword search may not work until indexes are created.');
+      // Don't throw - allow MCP to connect even without indexes
     }
   }
   
