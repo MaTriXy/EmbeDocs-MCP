@@ -1,0 +1,2013 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EmbeDocs - Universal Documentation Intelligence</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* === 2025 CUTTING-EDGE DESIGN SYSTEM === */
+        :root {
+            /* Advanced Color Palette */
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --primary-dark: #4f46e5;
+            --secondary: #06b6d4;
+            --accent: #f59e0b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            
+            /* 2025 Gradients */
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-secondary: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+            --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            --gradient-cosmic: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            --gradient-aurora: linear-gradient(135deg, #a855f7 0%, #ec4899 50%, #f59e0b 100%);
+            
+            /* Glass Morphism */
+            --glass: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.12);
+            --glass-hover: rgba(255, 255, 255, 0.12);
+            
+            /* Dark Theme 2025 */
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #131318;
+            --bg-tertiary: #1a1a22;
+            --surface: rgba(255, 255, 255, 0.04);
+            --surface-hover: rgba(255, 255, 255, 0.08);
+            
+            /* Typography */
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.7);
+            --text-muted: rgba(255, 255, 255, 0.5);
+            
+            /* Spacing & Sizing */
+            --radius-xs: 6px;
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 24px;
+            --radius-2xl: 32px;
+            
+            /* Advanced Shadows */
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.3);
+            --shadow-cosmic: 0 8px 32px rgba(102, 126, 234, 0.2);
+            
+            /* Transitions */
+            --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+            overflow-x: hidden;
+        }
+
+        /* Animated Background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(6, 182, 212, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 60%, rgba(245, 158, 11, 0.05) 0%, transparent 50%);
+            animation: backgroundFloat 20s ease-in-out infinite;
+            z-index: -1;
+        }
+
+        @keyframes backgroundFloat {
+            0%, 100% { transform: translateY(0px) rotate(0deg) scale(1); }
+            33% { transform: translateY(-20px) rotate(1deg) scale(1.02); }
+            66% { transform: translateY(10px) rotate(-0.5deg) scale(0.98); }
+        }
+
+        /* Glass Container */
+        .container {
+            background: var(--surface);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-2xl);
+            box-shadow: var(--shadow-cosmic);
+            padding: 3rem;
+            max-width: 900px;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition-smooth);
+        }
+
+        .container:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-glow);
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+
+        .logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .logo-icon {
+            width: 64px;
+            height: 64px;
+            background: var(--gradient-cosmic);
+            border-radius: var(--radius-xl);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            position: relative;
+            box-shadow: var(--shadow-cosmic);
+            animation: logoFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes logoFloat {
+            0%, 100% { transform: translateY(0px) rotateY(0deg); }
+            50% { transform: translateY(-8px) rotateY(10deg); }
+        }
+
+        .logo-text {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: var(--gradient-cosmic);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.02em;
+        }
+
+        .tagline {
+            font-size: 1.25rem;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .description {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Setup Steps */
+        .setup-steps {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem 1.5rem;
+            background: var(--surface);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-xl);
+            transition: var(--transition-smooth);
+            min-width: 160px;
+        }
+
+        .step.active {
+            background: var(--gradient-success);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-cosmic);
+        }
+
+        .step-number {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: var(--text-primary);
+            font-size: 16px;
+        }
+
+        .step.active .step-number {
+            background: rgba(255, 255, 255, 0.3);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.1); }
+        }
+
+        .step-text {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        /* Form Sections */
+        .form-section {
+            background: var(--surface);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-xl);
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition-smooth);
+        }
+
+        .form-section:hover {
+            transform: translateY(-2px);
+            background: var(--surface-hover);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            background: var(--gradient-secondary);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .section-subtitle {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        /* Input Groups */
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .input-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: var(--transition-smooth);
+            backdrop-filter: blur(10px);
+        }
+
+        .input-field::placeholder {
+            color: var(--text-muted);
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .input-field.valid {
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .input-field.invalid {
+            border-color: var(--error);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        /* Repository Selection */
+        .repo-selection {
+            margin-bottom: 2rem;
+        }
+
+        .repo-type-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--radius-xl);
+            padding: 0.5rem;
+        }
+
+        .repo-tab {
+            flex: 1;
+            padding: 1rem 1.5rem;
+            background: transparent;
+            border: none;
+            border-radius: var(--radius-lg);
+            color: var(--text-secondary);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .repo-tab.active {
+            background: var(--gradient-secondary);
+            color: var(--text-primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-cosmic);
+        }
+
+        .repo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .repo-card {
+            background: var(--surface);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-xl);
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .repo-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.6s;
+        }
+
+        .repo-card:hover::before {
+            left: 100%;
+        }
+
+        .repo-card:hover {
+            transform: translateY(-4px) scale(1.02);
+            border-color: var(--primary);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .repo-card.selected {
+            background: var(--gradient-success);
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: translateY(-2px) scale(1.02);
+        }
+
+        .repo-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .repo-icon {
+            font-size: 2rem;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+        }
+
+        .repo-name {
+            font-weight: 700;
+            color: var(--text-primary);
+            font-size: 1.125rem;
+        }
+
+        .repo-description {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            line-height: 1.5;
+            margin-bottom: 1rem;
+        }
+
+        .repo-stats {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+            flex-wrap: wrap;
+        }
+
+        /* Selection Summary */
+        .selection-summary {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--radius-xl);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px dashed var(--glass-border);
+        }
+
+        .summary-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .summary-title {
+            font-weight: 700;
+            color: var(--text-primary);
+            font-size: 1.125rem;
+        }
+
+        .selected-repos-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .selected-repo-tag {
+            background: var(--gradient-secondary);
+            color: var(--text-primary);
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-md);
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .remove-repo {
+            background: rgba(255, 255, 255, 0.3);
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: white;
+            font-size: 12px;
+            transition: var(--transition-smooth);
+        }
+
+        .remove-repo:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Custom Repository */
+        .custom-repo {
+            background: var(--surface-glass);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            margin-top: 20px;
+        }
+
+        .custom-repo-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .custom-inputs {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 16px;
+            align-items: end;
+        }
+
+        /* MCP Instructions */
+        .mcp-instructions {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            margin-bottom: 32px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .mcp-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .mcp-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-white);
+        }
+
+        .mcp-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .mcp-step {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--radius-md);
+            padding: 20px;
+        }
+
+        .mcp-step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            background: var(--secondary-gradient);
+            border-radius: 50%;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 12px;
+        }
+
+        .mcp-step-title {
+            font-weight: 600;
+            color: var(--text-white);
+            margin-bottom: 8px;
+        }
+
+        .mcp-step-desc {
+            color: var(--text-light);
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .code-block {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: var(--radius-sm);
+            padding: 1rem 1.25rem;
+            font-family: 'SF Mono', Consolas, monospace;
+            font-size: 0.8125rem;
+            color: #e3f2fd;
+            margin: 0.5rem 0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow-x: auto;
+            white-space: pre;
+            line-height: 1.5;
+        }
+
+        /* MCP Configuration Sections */
+        .config-section {
+            background: var(--surface);
+            border-radius: var(--radius-xl);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--glass-border);
+        }
+
+        .config-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .config-title {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            flex: 1;
+        }
+
+        .config-description {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .copy-btn {
+            background: var(--gradient-secondary);
+            border: none;
+            border-radius: var(--radius-md);
+            padding: 0.5rem 1rem;
+            color: var(--text-primary);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .copy-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-glow);
+        }
+
+        /* Installation Steps */
+        .install-steps {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--radius-xl);
+            padding: 1.5rem;
+            margin-top: 2rem;
+            border: 1px dashed var(--glass-border);
+        }
+
+        .install-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .install-title {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .install-step {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            padding: 1rem;
+            border: 1px solid var(--glass-border);
+        }
+
+        .step-num {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--gradient-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            flex-shrink: 0;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+            font-size: 0.875rem;
+        }
+
+        .step-desc {
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            line-height: 1.4;
+        }
+
+        /* Deploy Summary */
+        .deploy-summary {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--radius-xl);
+            padding: 2rem;
+            border: 1px solid var(--glass-border);
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .summary-item {
+            text-align: center;
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            border: 1px solid var(--glass-border);
+        }
+
+        .summary-icon {
+            font-size: 2rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .summary-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .summary-value {
+            font-weight: 700;
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+
+        .processing-info {
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            border: 1px solid var(--glass-border);
+        }
+
+        .info-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .info-title {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .info-list {
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        .info-item {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        /* Test Button */
+        .test-button {
+            background: var(--gradient-secondary);
+            border: none;
+            border-radius: var(--radius-lg);
+            padding: 1rem 2rem;
+            color: var(--text-primary);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-bounce);
+            margin-top: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-width: 180px;
+            justify-content: center;
+        }
+
+        .test-button:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .test-button:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        .test-button.loading {
+            background: var(--gradient-primary);
+            cursor: not-allowed;
+            animation: buttonPulse 1.5s infinite;
+        }
+
+        @keyframes buttonPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* Action Buttons */
+        .actions {
+            display: flex;
+            gap: 1.25rem;
+            justify-content: center;
+            margin-top: 2.5rem;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border-radius: var(--radius-lg);
+            border: none;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: var(--transition-bounce);
+            min-width: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--gradient-success);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary {
+            background: var(--surface);
+            color: var(--text-primary);
+            border: 1px solid var(--glass-border);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .btn:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Status Messages */
+        .status-message {
+            padding: 1rem 1.5rem;
+            border-radius: var(--radius-lg);
+            margin: 1.25rem 0;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .status-message.success {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: var(--success);
+        }
+
+        .status-message.error {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: var(--error);
+        }
+
+        .status-message.info {
+            background: rgba(99, 102, 241, 0.15);
+            border: 1px solid rgba(99, 102, 241, 0.4);
+            color: var(--primary);
+        }
+
+        /* Loading Animations */
+        .loading-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid var(--text-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Hidden state */
+        .hidden {
+            display: none !important;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1.5rem;
+                margin: 1rem;
+            }
+            
+            .setup-steps {
+                gap: 0.75rem;
+            }
+            
+            .step {
+                padding: 0.875rem 1rem;
+                font-size: 0.875rem;
+                min-width: 140px;
+            }
+            
+            .repo-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .custom-inputs {
+                grid-template-columns: 1fr;
+            }
+            
+            .actions {
+                flex-direction: column;
+            }
+            
+            .mcp-steps {
+                grid-template-columns: 1fr;
+            }
+
+            .logo-text {
+                font-size: 2rem;
+            }
+
+            .tagline {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">
+                <div class="logo-icon">🧠</div>
+                <div class="logo-text">EmbeDocs</div>
+            </div>
+            <div class="tagline">Universal Documentation Intelligence</div>
+            <div class="description">
+                Transform any GitHub repository into intelligent, searchable knowledge. 
+                Powered by advanced AI embeddings and vector search - works with Claude Code, Cursor, and any MCP-compatible IDE.
+            </div>
+        </div>
+
+        <!-- Setup Steps -->
+        <div class="setup-steps">
+            <div class="step active" id="step1">
+                <div class="step-number">1</div>
+                <div class="step-text">Configure APIs</div>
+            </div>
+            <div class="step" id="step2">
+                <div class="step-number">2</div>
+                <div class="step-text">Select Sources</div>
+            </div>
+            <div class="step" id="step3">
+                <div class="step-number">3</div>
+                <div class="step-text">MCP Integration</div>
+            </div>
+            <div class="step" id="step4">
+                <div class="step-number">4</div>
+                <div class="step-text">Process & Deploy</div>
+            </div>
+        </div>
+
+        <!-- Step 1: API Configuration -->
+        <div id="credentials-section" class="form-section">
+            <div class="section-header">
+                <div class="section-icon">🔑</div>
+                <div>
+                    <div class="section-title">API Credentials</div>
+                    <div class="section-subtitle">Connect your MongoDB Atlas and Voyage AI services</div>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">
+                    <span>🍃</span>
+                    MongoDB Atlas Connection String
+                </label>
+                <input type="text" 
+                       id="mongodbUri" 
+                       class="input-field" 
+                       placeholder="mongodb+srv://username:password@cluster.mongodb.net/"
+                       autocomplete="off">
+                <small style="color: rgba(255,255,255,0.6); margin-top: 8px; display: block;">
+                    Get from MongoDB Atlas → Database → Connect → Drivers
+                </small>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">
+                    <span>🚀</span>
+                    Voyage AI API Key
+                </label>
+                <input type="password" 
+                       id="voyageKey" 
+                       class="input-field" 
+                       placeholder="pa-your-voyage-ai-api-key"
+                       autocomplete="off">
+                <small style="color: rgba(255,255,255,0.6); margin-top: 8px; display: block;">
+                    Get from Voyage AI dashboard → API Keys
+                </small>
+            </div>
+
+            <button class="test-button" onclick="testCredentials()">
+                <span class="button-text">🔍 Test Connection</span>
+                <span class="loading-spinner hidden"></span>
+            </button>
+
+            <div id="credentials-status"></div>
+        </div>
+
+        <!-- Step 2: Repository Selection -->
+        <div id="repositories-section" class="form-section hidden">
+            <div class="section-header">
+                <div class="section-icon">📚</div>
+                <div>
+                    <div class="section-title">Documentation Sources</div>
+                    <div class="section-subtitle">Choose repositories to embed and index for intelligent search</div>
+                </div>
+            </div>
+
+            <div class="repo-selection">
+                <div class="repo-type-tabs">
+                    <button class="repo-tab active" onclick="switchRepoTab('popular')" id="tab-popular">
+                        ⭐ Popular Docs
+                    </button>
+                    <button class="repo-tab" onclick="switchRepoTab('custom')" id="tab-custom">
+                        🔗 Custom GitHub
+                    </button>
+                </div>
+
+                <div id="popular-repos" class="repo-content">
+                    <div class="repo-grid" id="defaultRepos">
+                        <!-- Default repositories will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <div id="custom-repos" class="repo-content hidden">
+                    <div class="custom-repo">
+                        <div class="custom-repo-header">
+                            <span>➕</span>
+                            <strong style="color: white;">Add Custom Repository</strong>
+                            <small style="color: rgba(255,255,255,0.6); margin-left: auto;">Any public GitHub repository</small>
+                        </div>
+                        <div class="custom-inputs">
+                            <input type="text" 
+                                   id="customRepo" 
+                                   class="input-field" 
+                                   placeholder="https://github.com/owner/repository">
+                            <button class="test-button" onclick="validateCustomRepo()">
+                                <span>🔍 Validate & Add</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Selection Summary -->
+            <div class="selection-summary" id="selection-summary">
+                <div class="summary-header">
+                    <span>📋</span>
+                    <div class="summary-title">Selected for Processing</div>
+                    <span id="repo-count" style="margin-left: auto; color: #4facfe; font-weight: 600;">0 repositories</span>
+                </div>
+                <div class="selected-repos-list" id="selected-repos-list">
+                    <div style="color: rgba(255,255,255,0.6); font-style: italic;">No repositories selected</div>
+                </div>
+            </div>
+
+            <div id="repo-status"></div>
+        </div>
+
+        <!-- Step 3: MCP Integration Guide -->
+        <div id="mcp-section" class="form-section hidden">
+            <div class="section-header">
+                <div class="section-icon">🔌</div>
+                <div>
+                    <div class="section-title">MCP Integration Setup</div>
+                    <div class="section-subtitle">Ready-to-copy configurations for Claude Code and Cursor</div>
+                </div>
+            </div>
+
+            <div class="mcp-instructions">
+                <div class="mcp-header">
+                    <span>⚙️</span>
+                    <div class="mcp-title">Configuration Files</div>
+                </div>
+                
+                <!-- Claude Code Configuration -->
+                <div class="config-section">
+                    <div class="config-header">
+                        <span>🔵</span>
+                        <div class="config-title">Claude Code Configuration</div>
+                        <button class="copy-btn" onclick="copyConfig('claude-config')">📋 Copy</button>
+                    </div>
+                    <div class="config-description">Add to your Claude Code MCP settings:</div>
+                    <div class="code-block" id="claude-config">{
+  "mcpServers": {
+    "embedocs": {
+      "command": "npx",
+      "args": ["embedocs-mcp"],
+      "env": {
+        "MONGODB_URI": "your-mongodb-connection-string",
+        "VOYAGE_API_KEY": "your-voyage-api-key"
+      }
+    }
+  }
+}</div>
+                </div>
+
+                <!-- Cursor Configuration -->
+                <div class="config-section">
+                    <div class="config-header">
+                        <span>🟡</span>
+                        <div class="config-title">Cursor Configuration</div>
+                        <button class="copy-btn" onclick="copyConfig('cursor-config')">📋 Copy</button>
+                    </div>
+                    <div class="config-description">Add to your Cursor MCP settings:</div>
+                    <div class="code-block" id="cursor-config">{
+  "mcpServers": {
+    "embedocs": {
+      "command": "npx",
+      "args": ["embedocs-mcp"],
+      "env": {
+        "MONGODB_URI": "your-mongodb-connection-string",
+        "VOYAGE_API_KEY": "your-voyage-api-key"
+      }
+    }
+  }
+}</div>
+                </div>
+
+                <!-- Installation Steps -->
+                <div class="install-steps">
+                    <div class="install-header">
+                        <span>🚀</span>
+                        <div class="install-title">Quick Setup Steps</div>
+                    </div>
+                    <div class="steps-grid">
+                        <div class="install-step">
+                            <div class="step-num">1</div>
+                            <div class="step-content">
+                                <div class="step-title">Install Package</div>
+                                <div class="step-desc">npm install -g embedocs-mcp</div>
+                            </div>
+                        </div>
+                        <div class="install-step">
+                            <div class="step-num">2</div>
+                            <div class="step-content">
+                                <div class="step-title">Copy Configuration</div>
+                                <div class="step-desc">Use the JSON above in your IDE</div>
+                            </div>
+                        </div>
+                        <div class="install-step">
+                            <div class="step-num">3</div>
+                            <div class="step-content">
+                                <div class="step-title">Update Credentials</div>
+                                <div class="step-desc">Replace with your actual API keys</div>
+                            </div>
+                        </div>
+                        <div class="install-step">
+                            <div class="step-num">4</div>
+                            <div class="step-content">
+                                <div class="step-title">Start Using</div>
+                                <div class="step-desc">Search your docs with AI assistance!</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 4: Ready to Process -->
+        <div id="deploy-section" class="form-section hidden">
+            <div class="section-header">
+                <div class="section-icon">🚀</div>
+                <div>
+                    <div class="section-title">Ready to Process</div>
+                    <div class="section-subtitle">Start embedding your selected repositories</div>
+                </div>
+            </div>
+
+            <div class="deploy-summary">
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <div class="summary-icon">🔑</div>
+                        <div class="summary-label">APIs Configured</div>
+                        <div class="summary-value">MongoDB + Voyage AI</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-icon">📚</div>
+                        <div class="summary-label">Repositories Selected</div>
+                        <div class="summary-value" id="final-repo-count">0 repositories</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-icon">🔌</div>
+                        <div class="summary-label">MCP Ready</div>
+                        <div class="summary-value">Claude Code & Cursor</div>
+                    </div>
+                </div>
+
+                <div class="processing-info">
+                    <div class="info-header">
+                        <span>⏱️</span>
+                        <div class="info-title">What happens next?</div>
+                    </div>
+                    <div class="info-list">
+                        <div class="info-item">✅ Clone and analyze your selected repositories</div>
+                        <div class="info-item">✅ Generate high-quality semantic embeddings with voyage-context-3</div>
+                        <div class="info-item">✅ Build searchable vector database in MongoDB Atlas</div>
+                        <div class="info-item">✅ Enable intelligent AI-powered documentation search</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="actions">
+            <button class="btn btn-secondary" onclick="previousStep()" id="prevBtn" disabled>
+                ← Previous
+            </button>
+            <button class="btn btn-primary" onclick="nextStep()" id="nextBtn" disabled>
+                Next Step →
+            </button>
+            <button class="btn btn-primary hidden" onclick="console.error('🔥 ONCLICK TRIGGERED'); window.startProcessing && window.startProcessing();" id="startBtn">
+                🚀 Start Processing <span id="processing-count"></span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // EmbeDocs Setup JavaScript - Universal Version  
+        let currentStep = 1;
+        let credentials = {};
+        let selectedRepos = [];
+        let activeRepoTab = 'popular';
+        
+        // EMERGENCY RESET FUNCTION - Call from browser console
+        window.emergencyReset = async function() {
+            console.error('🚨 EMERGENCY RESET: Clearing server indexing state');
+            try {
+                const response = await fetch('/api/reset-indexing', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: '{}'
+                });
+                
+                const result = await response.json();
+                console.error('🔧 Reset result:', result);
+                
+                if (result.success) {
+                    console.error('✅ Server state reset! You can now try clicking Start Processing again.');
+                    alert('✅ Server state reset! Button should now work.');
+                } else {
+                    console.error('❌ Reset failed:', result.message);
+                    alert('❌ Reset failed: ' + result.message);
+                }
+            } catch (error) {
+                console.error('💥 Reset request failed:', error);
+                alert('💥 Reset request failed: ' + error.message);
+            }
+        };
+        
+        // EMERGENCY DEBUG FUNCTION - Call from browser console
+        window.debugButton = function() {
+            const startBtn = document.getElementById('startBtn');
+            console.error('🔍 BUTTON DEBUG REPORT:', {
+                exists: !!startBtn,
+                disabled: startBtn ? startBtn.disabled : 'N/A',
+                hidden: startBtn ? startBtn.classList.contains('hidden') : 'N/A',
+                style: startBtn ? startBtn.style.cssText : 'N/A',
+                onclick: startBtn ? startBtn.onclick : 'N/A',
+                currentStep: currentStep,
+                credentials: credentials,
+                selectedRepos: selectedRepos.length,
+                canClick: startBtn ? !startBtn.disabled && !startBtn.classList.contains('hidden') : false
+            });
+            
+            if (startBtn) {
+                console.error('🔧 FORCING BUTTON ENABLE');
+                startBtn.disabled = false;
+                startBtn.classList.remove('hidden');
+                startBtn.style.pointerEvents = 'auto';
+                startBtn.style.opacity = '1';
+                startBtn.style.cursor = 'pointer';
+                
+                console.error('🎯 Button should now be clickable!');
+            }
+        };
+        
+        // Universal documentation repositories (not just MongoDB)
+        const popularRepositories = [
+            {
+                id: 'mongodb-docs',
+                name: 'MongoDB Official Docs',
+                repo: 'mongodb/docs',
+                branch: 'master',
+                icon: '🍃',
+                description: 'Complete MongoDB documentation - database, queries, aggregation, and more',
+                category: 'Database',
+                docs: '~9,800',
+                selected: true
+            },
+            {
+                id: 'react-docs',
+                name: 'React Documentation',
+                repo: 'reactjs/react.dev',
+                branch: 'main',
+                icon: '⚛️',
+                description: 'Official React documentation - components, hooks, and modern React patterns',
+                category: 'Frontend',
+                docs: '~500',
+                selected: false
+            },
+            {
+                id: 'nextjs-docs',
+                name: 'Next.js Documentation', 
+                repo: 'vercel/next.js',
+                branch: 'canary',
+                icon: '🔺',
+                description: 'Next.js framework documentation - SSR, routing, API routes, and deployment',
+                category: 'Framework',
+                docs: '~800',
+                selected: false
+            },
+            {
+                id: 'typescript-handbook',
+                name: 'TypeScript Handbook',
+                repo: 'microsoft/TypeScript-Website',
+                branch: 'v2',
+                icon: '🔷',
+                description: 'Comprehensive TypeScript documentation and handbook',
+                category: 'Language',
+                docs: '~300',
+                selected: false
+            },
+            {
+                id: 'nodejs-docs',
+                name: 'Node.js Documentation',
+                repo: 'nodejs/node',
+                branch: 'main',
+                icon: '🟢',
+                description: 'Official Node.js API documentation and guides',
+                category: 'Runtime',
+                docs: '~400',
+                selected: false
+            },
+            {
+                id: 'python-docs',
+                name: 'Python Documentation',
+                repo: 'python/cpython',
+                branch: 'main',
+                icon: '🐍',
+                description: 'Official Python language documentation and standard library reference',
+                category: 'Language',
+                docs: '~2,000',
+                selected: false
+            }
+        ];
+
+        // Initialize the UI
+        function init() {
+            renderRepositories();
+            updateStepVisibility();
+            updateSelectionSummary();
+        }
+
+        // Switch between repository tabs
+        function switchRepoTab(tabName) {
+            activeRepoTab = tabName;
+            
+            // Update tab buttons
+            document.getElementById('tab-popular').classList.toggle('active', tabName === 'popular');
+            document.getElementById('tab-custom').classList.toggle('active', tabName === 'custom');
+            
+            // Update content visibility
+            document.getElementById('popular-repos').classList.toggle('hidden', tabName !== 'popular');
+            document.getElementById('custom-repos').classList.toggle('hidden', tabName !== 'custom');
+        }
+
+        // Render repository cards
+        function renderRepositories() {
+            const container = document.getElementById('defaultRepos');
+            container.innerHTML = popularRepositories.map(repo => `
+                <div class="repo-card ${repo.selected ? 'selected' : ''}" 
+                     onclick="toggleRepository('${repo.id}')" 
+                     data-repo-id="${repo.id}">
+                    <div class="repo-header">
+                        <div class="repo-icon">${repo.icon}</div>
+                        <div class="repo-name">${repo.name}</div>
+                    </div>
+                    <div class="repo-description">${repo.description}</div>
+                    <div class="repo-stats">
+                        <span>📄 ${repo.docs} docs</span>
+                        <span>🏷️ ${repo.category}</span>
+                    </div>
+                </div>
+            `).join('');
+            
+            updateSelectedRepos();
+        }
+
+        // Toggle repository selection
+        function toggleRepository(repoId) {
+            const repo = popularRepositories.find(r => r.id === repoId);
+            if (repo) {
+                repo.selected = !repo.selected;
+                const card = document.querySelector(`[data-repo-id="${repoId}"]`);
+                card.classList.toggle('selected', repo.selected);
+                updateSelectedRepos();
+                updateSelectionSummary();
+                updateNextButton();
+            }
+        }
+
+        // Remove repository from selection
+        function removeRepository(repoId) {
+            const repo = [...popularRepositories, ...selectedRepos.filter(r => r.custom)].find(r => r.id === repoId);
+            if (repo) {
+                if (repo.custom) {
+                    // Remove custom repo from selectedRepos
+                    const index = selectedRepos.findIndex(r => r.id === repoId);
+                    if (index > -1) selectedRepos.splice(index, 1);
+                } else {
+                    // Toggle popular repo
+                    repo.selected = false;
+                    const card = document.querySelector(`[data-repo-id="${repoId}"]`);
+                    if (card) card.classList.remove('selected');
+                }
+                updateSelectedRepos();
+                updateSelectionSummary();
+                updateNextButton();
+            }
+        }
+
+        // Update selected repositories array
+        function updateSelectedRepos() {
+            const selectedPopular = popularRepositories.filter(r => r.selected);
+            const selectedCustom = selectedRepos.filter(r => r.custom);
+            selectedRepos = [...selectedPopular, ...selectedCustom];
+        }
+
+        // Update selection summary
+        function updateSelectionSummary() {
+            const countEl = document.getElementById('repo-count');
+            const listEl = document.getElementById('selected-repos-list');
+            
+            countEl.textContent = `${selectedRepos.length} repositories`;
+            
+            if (selectedRepos.length === 0) {
+                listEl.innerHTML = '<div style="color: rgba(255,255,255,0.6); font-style: italic;">No repositories selected</div>';
+            } else {
+                listEl.innerHTML = selectedRepos.map(repo => `
+                    <div class="selected-repo-tag">
+                        <span>${repo.icon}</span>
+                        <span>${repo.name}</span>
+                        <button class="remove-repo" onclick="removeRepository('${repo.id}')" title="Remove">×</button>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // Test API credentials
+        async function testCredentials() {
+            const mongoUri = document.getElementById('mongodbUri').value.trim();
+            const voyageKey = document.getElementById('voyageKey').value.trim();
+            
+            if (!mongoUri || !voyageKey) {
+                showStatus('credentials-status', '⚠️ Please enter both MongoDB URI and Voyage AI key', 'error');
+                return;
+            }
+
+            const button = document.querySelector('.test-button');
+            const buttonText = button.querySelector('.button-text');
+            const spinner = button.querySelector('.loading-spinner');
+            
+            // Show loading state
+            button.classList.add('loading');
+            buttonText.textContent = '🔄 Testing...';
+            spinner.classList.remove('hidden');
+
+            try {
+                // Test MongoDB connection
+                await testMongoDB(mongoUri);
+                
+                // Test Voyage AI
+                await testVoyageAI(voyageKey);
+                
+                // Success
+                credentials = { mongoUri, voyageKey };
+                showStatus('credentials-status', '✅ All credentials verified successfully!', 'success');
+                
+                // Mark as tested
+                document.getElementById('mongodbUri').dataset.tested = 'true';
+                document.getElementById('voyageKey').dataset.tested = 'true';
+                
+                // Enable next step
+                updateNextButton();
+                
+                // Auto-advance after success to step 2 (repository selection)
+                setTimeout(() => {
+                    if (currentStep === 1) {
+                        nextStep(); // This should go to step 2 (repositories)
+                    }
+                }, 1500);
+                
+            } catch (error) {
+                showStatus('credentials-status', `❌ ${error.message}`, 'error');
+            } finally {
+                // Reset button state
+                button.classList.remove('loading');
+                buttonText.textContent = '🔍 Test Connection';
+                spinner.classList.add('hidden');
+            }
+        }
+
+        // Test MongoDB connection via backend API
+        async function testMongoDB(uri) {
+            const response = await fetch('/api/test-mongodb', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ uri })
+            });
+            
+            const result = await response.json();
+            if (!result.success) {
+                throw new Error(result.message);
+            }
+            return true;
+        }
+
+        // Test Voyage AI connection via backend API
+        async function testVoyageAI(key) {
+            const response = await fetch('/api/test-voyage', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ apiKey: key })
+            });
+            
+            const result = await response.json();
+            if (!result.success) {
+                throw new Error(result.message);
+            }
+            return true;
+        }
+
+        // Validate custom repository
+        async function validateCustomRepo() {
+            const repoUrl = document.getElementById('customRepo').value.trim();
+            
+            if (!repoUrl) {
+                showStatus('repo-status', '⚠️ Please enter a GitHub repository URL', 'error');
+                return;
+            }
+            
+            try {
+                showStatus('repo-status', '🔍 Validating repository...', 'info');
+                
+                const response = await fetch('/api/validate-repo', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ repoUrl })
+                });
+                
+                const result = await response.json();
+                if (!result.success) {
+                    throw new Error(result.message);
+                }
+                
+                const customRepo = { ...result.repo, custom: true };
+                
+                // Check if already added
+                const existingRepo = selectedRepos.find(r => r.repo === customRepo.repo);
+                if (existingRepo) {
+                    showStatus('repo-status', '⚠️ Repository already added', 'error');
+                    return;
+                }
+                
+                selectedRepos.push(customRepo);
+                
+                document.getElementById('customRepo').value = '';
+                showStatus('repo-status', `✅ Added ${customRepo.name}`, 'success');
+                
+                updateSelectionSummary();
+                updateNextButton();
+                
+            } catch (error) {
+                showStatus('repo-status', `❌ ${error.message}`, 'error');
+            }
+        }
+
+        // Step navigation
+        function nextStep() {
+            console.error('🔍 STEP NAVIGATION DEBUG:', {
+                currentStep: currentStep,
+                nextStep: currentStep + 1,
+                maxStep: 4
+            });
+            
+            // CRITICAL FIX: Add validation before advancing
+            if (currentStep === 1) {
+                // Validate API credentials before advancing from step 1
+                const mongoUri = document.getElementById('mongodbUri').value;
+                const voyageKey = document.getElementById('voyageKey').value;
+                
+                if (!mongoUri || !voyageKey) {
+                    showStatus('credentials-status', '⚠️ Please enter both MongoDB URI and Voyage API key', 'error');
+                    return;
+                }
+                
+                // Check if tests have passed
+                const mongoTested = document.getElementById('mongodbUri').dataset.tested === 'true';
+                const voyageTested = document.getElementById('voyageKey').dataset.tested === 'true';
+                
+                if (!mongoTested || !voyageTested) {
+                    showStatus('mongo-status', '⚠️ Please test both connections before proceeding', 'warning');
+                    showStatus('voyage-status', '⚠️ Please test both connections before proceeding', 'warning');
+                    return;
+                }
+            }
+            
+            if (currentStep === 2) {
+                // Validate repository selection before advancing from step 2
+                // Check the actual selectedRepos array instead of DOM elements
+                if (!selectedRepos || selectedRepos.length === 0) {
+                    showStatus('repo-status', '⚠️ Please select at least one repository', 'error');
+                    return;
+                }
+            }
+            
+            if (currentStep < 4) {
+                currentStep++;
+                console.error('✅ Advanced to step:', currentStep);
+                updateStepVisibility();
+                updateStepIndicators();
+            } else {
+                console.error('❌ Cannot advance beyond step 4');
+            }
+        }
+
+        function previousStep() {
+            if (currentStep > 1) {
+                currentStep--;
+                updateStepVisibility();
+                updateStepIndicators();
+            }
+        }
+
+        function updateStepVisibility() {
+            const sections = ['credentials-section', 'repositories-section', 'mcp-section', 'deploy-section'];
+            
+            sections.forEach((sectionId, index) => {
+                const section = document.getElementById(sectionId);
+                section.classList.toggle('hidden', currentStep !== index + 1);
+            });
+            
+            // Update button visibility
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const startBtn = document.getElementById('startBtn');
+            
+            prevBtn.disabled = currentStep === 1;
+            nextBtn.classList.toggle('hidden', currentStep === 4);
+            startBtn.classList.toggle('hidden', currentStep !== 4);
+            
+            // Update processing count and final summary
+            if (currentStep === 4) {
+                document.getElementById('processing-count').textContent = `(${selectedRepos.length} repos)`;
+                document.getElementById('final-repo-count').textContent = `${selectedRepos.length} repositories`;
+            }
+            
+            updateNextButton();
+        }
+
+        function updateStepIndicators() {
+            document.querySelectorAll('.step').forEach((step, index) => {
+                step.classList.toggle('active', index + 1 <= currentStep);
+            });
+        }
+
+        function updateNextButton() {
+            const nextBtn = document.getElementById('nextBtn');
+            const startBtn = document.getElementById('startBtn');
+            
+            let canProceed = false;
+            
+            if (currentStep === 1) {
+                canProceed = credentials.mongoUri && credentials.voyageKey;
+            } else if (currentStep === 2) {
+                canProceed = selectedRepos.length > 0;
+            } else if (currentStep === 3) {
+                canProceed = true;
+            } else if (currentStep === 4) {
+                // Step 4: ALWAYS ALLOW - User has reached final step
+                // If they got here, they passed previous validations
+                canProceed = true;
+                
+                console.error('🔍 Step 4 - FORCE ENABLED:', {
+                    credentials: !!credentials,
+                    mongoUri: !!(credentials && credentials.mongoUri),
+                    voyageKey: !!(credentials && credentials.voyageKey),
+                    selectedRepos: selectedRepos.length,
+                    canProceed: 'FORCED_TRUE'
+                });
+            }
+            
+            nextBtn.disabled = !canProceed;
+            startBtn.disabled = !canProceed;
+            
+            // Debug button state and FORCE ENABLE if needed
+            if (currentStep === 4) {
+                console.error('🎯 Start button state:', {
+                    disabled: startBtn.disabled,
+                    hidden: startBtn.classList.contains('hidden'),
+                    canProceed,
+                    credentialsCheck: !!credentials,
+                    reposCheck: selectedRepos.length
+                });
+                
+                // FORCE ENABLE BUTTON FOR DEBUG
+                if (selectedRepos.length > 0 && credentials) {
+                    console.error('🔧 FORCE ENABLING START BUTTON!');
+                    startBtn.disabled = false;
+                    startBtn.style.opacity = '1';
+                    startBtn.style.pointerEvents = 'auto';
+                    startBtn.style.cursor = 'pointer';
+                }
+            }
+        }
+
+        // Copy configuration to clipboard
+        async function copyConfig(configId) {
+            const configElement = document.getElementById(configId);
+            const configText = configElement.textContent;
+            
+            try {
+                await navigator.clipboard.writeText(configText);
+                
+                // Show success feedback
+                const button = event.target.closest('.copy-btn');
+                const originalText = button.innerHTML;
+                button.innerHTML = '✅ Copied!';
+                button.style.background = 'var(--gradient-success)';
+                
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.style.background = 'var(--gradient-secondary)';
+                }, 2000);
+                
+            } catch (err) {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = configText;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                // Show success feedback
+                const button = event.target.closest('.copy-btn');
+                const originalText = button.innerHTML;
+                button.innerHTML = '✅ Copied!';
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                }, 2000);
+            }
+        }
+
+        // Start processing - WITH AGGRESSIVE DEBUG
+        window.startProcessing = async function startProcessing() {
+            console.error('🔥🔥🔥 START PROCESSING FUNCTION CALLED!!!');
+            console.error('📊 FULL STATE DEBUG:', {
+                currentStep: currentStep,
+                credentialsExists: !!credentials,
+                credentialsContent: credentials,
+                selectedReposLength: selectedRepos ? selectedRepos.length : 'NULL',
+                selectedReposContent: selectedRepos,
+                windowLocation: window.location.href
+            });
+            
+            // Force enable button for testing
+            const startBtn = document.getElementById('startBtn');
+            console.error('🎯 BUTTON STATE BEFORE:', {
+                disabled: startBtn.disabled,
+                hidden: startBtn.classList.contains('hidden'),
+                style: startBtn.style.cssText,
+                classList: Array.from(startBtn.classList)
+            });
+            
+            try {
+                // Validate data before processing
+                if (!credentials || !credentials.mongoUri || !credentials.voyageKey) {
+                    console.error('❌ Missing credentials:', credentials);
+                    showStatus('repo-status', '❌ Missing API credentials. Please go back to step 1.', 'error');
+                    return;
+                }
+                
+                if (!selectedRepos || selectedRepos.length === 0) {
+                    console.error('❌ No repositories selected:', selectedRepos);
+                    showStatus('repo-status', '❌ No repositories selected. Please go back to step 2.', 'error');
+                    return;
+                }
+
+                // Store selected repositories in session storage for progress page
+                sessionStorage.setItem('selectedRepos', JSON.stringify(selectedRepos));
+                sessionStorage.setItem('credentials', JSON.stringify(credentials));
+
+                // Prepare data for backend - fix property names to match server expectations
+                const setupData = {
+                    credentials: {
+                        mongoUri: credentials.mongoUri,
+                        voyageKey: credentials.voyageKey
+                    },
+                    repositories: selectedRepos
+                };
+                
+                console.log('🚀 Starting EmbeDocs processing with user selections:', {
+                    repositories: selectedRepos.map(r => ({ name: r.name, repo: r.repo, custom: r.custom })),
+                    totalRepos: selectedRepos.length
+                });
+                
+                // Show loading state
+                const startBtn = document.getElementById('startBtn');
+                startBtn.disabled = true;
+                startBtn.innerHTML = '<span class="loading-spinner"></span> Starting Processing...';
+                
+                showStatus('repo-status', `🚀 Starting processing of ${selectedRepos.length} repositories...`, 'info');
+                
+                // Send to backend
+                let response = await fetch('/api/start-indexing', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(setupData)
+                });
+                
+                let result = await response.json();
+                
+                // Handle 409 conflict (indexing already in progress)
+                if (response.status === 409 && result.canRetry) {
+                    console.error('🔧 Indexing in progress, attempting reset and retry...');
+                    showStatus('repo-status', '🔧 Indexing already in progress, resetting...', 'info');
+                    
+                    // Try to reset indexing state
+                    try {
+                        const resetResponse = await fetch('/api/reset-indexing', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: '{}'
+                        });
+                        
+                        if (resetResponse.ok) {
+                            console.error('✅ Reset successful, retrying with force...');
+                            
+                            // Retry with force=true
+                            setupData.force = true;
+                            response = await fetch('/api/start-indexing', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(setupData)
+                            });
+                            
+                            result = await response.json();
+                        }
+                    } catch (resetError) {
+                        console.error('❌ Reset failed, retrying with force anyway:', resetError);
+                        
+                        // Direct retry with force
+                        setupData.force = true;
+                        response = await fetch('/api/start-indexing', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(setupData)
+                        });
+                        
+                        result = await response.json();
+                    }
+                }
+                
+                if (!result.success) {
+                    throw new Error(result.message);
+                }
+                
+                showStatus('repo-status', '✅ Processing started successfully! Redirecting to progress page...', 'success');
+                
+                // Log successful configuration
+                console.log('✅ EmbeDocs: User selections successfully submitted to backend');
+                console.log('📋 Selected repositories will be processed:', selectedRepos.map(r => r.name));
+                
+                // Redirect to progress page
+                setTimeout(() => {
+                    window.location.href = result.redirectUrl || '/progress';
+                }, 2000);
+                
+            } catch (error) {
+                console.error('Start processing error:', error);
+                showStatus('repo-status', `❌ Failed to start processing: ${error.message}`, 'error');
+                
+                // Reset button
+                const startBtn = document.getElementById('startBtn');
+                startBtn.disabled = false;
+                startBtn.innerHTML = `🚀 Start Processing <span id="processing-count">(${selectedRepos.length} repos)</span>`;
+            }
+        }
+
+        // Utility function to show status messages
+        function showStatus(containerId, message, type) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = `
+                <div class="status-message ${type}">
+                    ${message}
+                </div>
+            `;
+            
+            // Auto-clear success messages after 3 seconds
+            if (type === 'success') {
+                setTimeout(() => {
+                    container.innerHTML = '';
+                }, 3000);
+            }
+        }
+
+        // EMERGENCY DEBUG - Add backup event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            console.error('🚨 DOM LOADED - SETTING UP EMERGENCY HANDLERS');
+            
+            init();
+            
+            // Add backup click handler to start button
+            setTimeout(() => {
+                const startBtn = document.getElementById('startBtn');
+                if (startBtn) {
+                    console.error('🔧 Adding backup click handler to start button');
+                    
+                    startBtn.addEventListener('click', function(e) {
+                        console.error('🔥 BACKUP CLICK HANDLER TRIGGERED!');
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        if (typeof window.startProcessing === 'function') {
+                            console.error('🚀 Calling startProcessing from backup handler');
+                            window.startProcessing();
+                        } else {
+                            console.error('❌ startProcessing function not found!');
+                        }
+                    });
+                    
+                    // Force button to be clickable
+                    startBtn.disabled = false;
+                    startBtn.style.pointerEvents = 'auto';
+                    console.error('🔧 Start button force enabled in DOM ready');
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

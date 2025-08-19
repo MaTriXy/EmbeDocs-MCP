@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EmbeDocs - Processing Intelligence</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* === 2025 CUTTING-EDGE DESIGN SYSTEM === */
+        :root {
+            /* Advanced Color Palette */
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --primary-dark: #4f46e5;
+            --secondary: #06b6d4;
+            --accent: #f59e0b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            
+            /* 2025 Gradients */
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-secondary: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+            --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            --gradient-cosmic: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            --gradient-aurora: linear-gradient(135deg, #a855f7 0%, #ec4899 50%, #f59e0b 100%);
+            
+            /* Glass Morphism */
+            --glass: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.12);
+            --glass-hover: rgba(255, 255, 255, 0.12);
+            
+            /* Dark Theme 2025 */
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #131318;
+            --bg-tertiary: #1a1a22;
+            --surface: rgba(255, 255, 255, 0.04);
+            --surface-hover: rgba(255, 255, 255, 0.08);
+            
+            /* Typography */
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.7);
+            --text-muted: rgba(255, 255, 255, 0.5);
+            
+            /* Spacing & Sizing */
+            --radius-xs: 6px;
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 24px;
+            --radius-2xl: 32px;
+            
+            /* Advanced Shadows */
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.3);
+            --shadow-cosmic: 0 8px 32px rgba(102, 126, 234, 0.2);
+            
+            /* Transitions */
+            --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+            overflow-x: hidden;
+        }
+
+        /* Animated Background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(6, 182, 212, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 60%, rgba(245, 158, 11, 0.05) 0%, transparent 50%);
+            animation: backgroundFloat 20s ease-in-out infinite;
+            z-index: -1;
+        }
+
+        @keyframes backgroundFloat {
+            0%, 100% { transform: translateY(0px) rotate(0deg) scale(1); }
+            33% { transform: translateY(-20px) rotate(1deg) scale(1.02); }
+            66% { transform: translateY(10px) rotate(-0.5deg) scale(0.98); }
+        }
+
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+
+        .logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .logo-icon {
+            width: 64px;
+            height: 64px;
+            background: var(--gradient-cosmic);
+            border-radius: var(--radius-xl);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            position: relative;
+            box-shadow: var(--shadow-cosmic);
+            animation: logoFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes logoFloat {
+            0%, 100% { transform: translateY(0px) rotateY(0deg); }
+            50% { transform: translateY(-8px) rotateY(10deg); }
+        }
+
+        .logo-text {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: var(--gradient-cosmic);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.02em;
+        }
+
+        .status-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .status-description {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-xl);
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition-smooth);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            background: var(--surface-hover);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--gradient-cosmic);
+        }
+
+        .stat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            background: var(--gradient-secondary);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: var(--gradient-cosmic);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+
+        .stat-progress {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-sm);
+            height: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .stat-progress-bar {
+            height: 100%;
+            background: var(--gradient-success);
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: var(--radius-sm);
+        }
+
+        /* Repository Grid */
+        .repos-section {
+            flex: 1;
+            margin-bottom: 3rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .repos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .repo-card {
+            background: var(--surface);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-xl);
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition-smooth);
+        }
+
+        .repo-card:hover {
+            transform: translateY(-2px);
+            background: var(--surface-hover);
+        }
+
+        .repo-card.completed {
+            border-color: var(--success);
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+        }
+
+        .repo-card.processing {
+            border-color: var(--primary);
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
+            animation: processingGlow 2s ease-in-out infinite;
+        }
+
+        @keyframes processingGlow {
+            0%, 100% { box-shadow: 0 0 20px rgba(99, 102, 241, 0.2); }
+            50% { box-shadow: 0 0 30px rgba(99, 102, 241, 0.4); }
+        }
+
+        .repo-card.error {
+            border-color: var(--error);
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
+        }
+
+        .repo-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .repo-icon {
+            font-size: 2rem;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+        }
+
+        .repo-info {
+            flex: 1;
+        }
+
+        .repo-name {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .repo-description {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .repo-status {
+            padding: 0.375rem 0.75rem;
+            border-radius: var(--radius-md);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .repo-status.completed {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .repo-status.processing {
+            background: rgba(99, 102, 241, 0.15);
+            color: var(--primary);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+
+        .repo-status.waiting {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--warning);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .repo-status.error {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--error);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .repo-progress {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-sm);
+            height: 6px;
+            margin: 1rem 0;
+            overflow: hidden;
+        }
+
+        .repo-progress-bar {
+            height: 100%;
+            background: var(--gradient-success);
+            transition: width 0.6s ease;
+            border-radius: var(--radius-sm);
+        }
+
+        .repo-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.875rem;
+        }
+
+        .repo-phase {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .repo-count {
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.25rem 0.5rem;
+            border-radius: var(--radius-sm);
+        }
+
+        /* Activity Feed */
+        .activity-section {
+            background: var(--surface);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-xl);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .activity-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .activity-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .live-indicator {
+            width: 8px;
+            height: 8px;
+            background: var(--error);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.1); }
+        }
+
+        .activity-list {
+            max-height: 300px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-time {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            min-width: 3rem;
+            font-weight: 500;
+        }
+
+        .activity-message {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        /* Completion Actions */
+        .completion-section {
+            background: var(--gradient-success);
+            border-radius: var(--radius-xl);
+            padding: 3rem 2rem;
+            text-align: center;
+            display: none;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        .completion-section.visible {
+            display: block;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .completion-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+        }
+
+        .completion-title {
+            font-size: 2rem;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 1rem;
+        }
+
+        .completion-description {
+            font-size: 1.125rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 2rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border-radius: var(--radius-lg);
+            border: none;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-width: 160px;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-secondary {
+            background: rgba(0, 0, 0, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-primary:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .repos-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .logo-text {
+                font-size: 2rem;
+            }
+
+            .status-title {
+                font-size: 1.5rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                min-width: auto;
+                width: 100%;
+            }
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--radius-sm);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: var(--radius-sm);
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">
+                <div class="logo-icon">🧠</div>
+                <div class="logo-text">EmbeDocs</div>
+            </div>
+            <div class="status-title">Processing Intelligence</div>
+            <div class="status-description">
+                Transforming your repositories into searchable AI knowledge
+            </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon">📚</div>
+                </div>
+                <div class="stat-value" id="total-repos">0</div>
+                <div class="stat-label">Total Repositories</div>
+                <div class="stat-progress">
+                    <div class="stat-progress-bar" id="repos-progress" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon">✅</div>
+                </div>
+                <div class="stat-value" id="completed-repos">0</div>
+                <div class="stat-label">Completed</div>
+                <div class="stat-progress">
+                    <div class="stat-progress-bar" id="completed-progress" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon">📄</div>
+                </div>
+                <div class="stat-value" id="total-docs">0</div>
+                <div class="stat-label">Files Processed</div>
+                <div class="stat-progress">
+                    <div class="stat-progress-bar" id="docs-progress" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon">⏱️</div>
+                </div>
+                <div class="stat-value" id="estimated-time">--</div>
+                <div class="stat-label">Time Remaining</div>
+                <div class="stat-progress">
+                    <div class="stat-progress-bar" id="time-progress" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Repository Processing -->
+        <div class="repos-section">
+            <div class="section-title">
+                🔄 Repository Processing
+            </div>
+            <div class="repos-grid" id="repos-grid">
+                <!-- Repositories will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Live Activity -->
+        <div class="activity-section">
+            <div class="activity-header">
+                <div class="activity-title">Live Activity</div>
+                <div class="live-indicator"></div>
+                <div class="spinner"></div>
+            </div>
+            <div class="activity-list" id="activity-list">
+                <div class="activity-item">
+                    <div class="activity-time">Now</div>
+                    <div class="activity-message">Initializing processing pipeline...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Completion Actions -->
+        <div class="completion-section" id="completion-section">
+            <div class="completion-icon">🎉</div>
+            <div class="completion-title">Processing Complete!</div>
+            <div class="completion-description">
+                Your repositories have been successfully transformed into intelligent, searchable knowledge. 
+                Ready to use with Claude Code, Cursor, or any MCP-compatible IDE.
+            </div>
+            <div class="action-buttons">
+                <a href="/setup" class="btn btn-secondary">
+                    ➕ Process More Repos
+                </a>
+                <button class="btn btn-primary" onclick="testMCP()">
+                    🔌 Test MCP Connection
+                </button>
+                <button class="btn btn-primary" onclick="downloadConfig()">
+                    ⬇️ Export Configuration
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // EmbeDocs Progress - 2025 Edition
+        let repositories = [];
+        let progressInterval;
+        let activityInterval;
+        let startTime = Date.now();
+
+        // Initialize
+        function init() {
+            loadRepositories();
+            startProgressTracking();
+            startActivityFeed();
+        }
+
+        // Load repositories from session storage
+        function loadRepositories() {
+            const sessionRepos = sessionStorage.getItem('selectedRepos');
+            if (sessionRepos) {
+                repositories = JSON.parse(sessionRepos);
+            } else {
+                // Fallback
+                repositories = [{
+                    id: 'fallback',
+                    name: 'Processing Repository',
+                    icon: '📦',
+                    description: 'Universal documentation processing',
+                    status: 'processing',
+                    progress: 0,
+                    phase: 'Initializing',
+                    documentsProcessed: 0
+                }];
+            }
+            renderRepositories();
+            updateStats();
+        }
+
+        // Render repository cards with 2025 design
+        function renderRepositories() {
+            const container = document.getElementById('repos-grid');
+            container.innerHTML = repositories.map(repo => `
+                <div class="repo-card ${repo.status || 'waiting'}" id="repo-${repo.id}">
+                    <div class="repo-header">
+                        <div class="repo-icon">${repo.icon || '📦'}</div>
+                        <div class="repo-info">
+                            <div class="repo-name">${repo.name}</div>
+                            <div class="repo-description">${repo.description || 'Repository processing'}</div>
+                        </div>
+                        <div class="repo-status ${repo.status || 'waiting'}" id="status-${repo.id}">
+                            ${getStatusText(repo.status || 'waiting')}
+                        </div>
+                    </div>
+                    <div class="repo-progress">
+                        <div class="repo-progress-bar" id="progress-${repo.id}" style="width: ${repo.progress || 0}%"></div>
+                    </div>
+                    <div class="repo-details">
+                        <div class="repo-phase" id="phase-${repo.id}">${repo.phase || 'Queued'}</div>
+                        <div class="repo-count" id="count-${repo.id}">
+                            ${repo.documentsProcessed || 0} files processed
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Get status text
+        function getStatusText(status) {
+            const statusMap = {
+                'waiting': 'Queued',
+                'processing': 'Processing',
+                'completed': 'Complete',
+                'error': 'Error'
+            };
+            return statusMap[status] || status;
+        }
+
+        // Update statistics
+        function updateStats() {
+            const totalRepos = repositories.length;
+            const completedRepos = repositories.filter(r => r.status === 'completed').length;
+            const totalDocs = repositories.reduce((sum, r) => sum + (r.documentsProcessed || 0), 0);
+            const reposProgress = totalRepos > 0 ? (completedRepos / totalRepos) * 100 : 0;
+            
+            // Update values with animation
+            animateValue('total-repos', totalRepos);
+            animateValue('completed-repos', completedRepos);
+            animateValue('total-docs', totalDocs);
+            
+            // Update progress bars
+            document.getElementById('repos-progress').style.width = reposProgress + '%';
+            document.getElementById('completed-progress').style.width = reposProgress + '%';
+            document.getElementById('docs-progress').style.width = Math.min(100, (totalDocs / 100)) + '%';
+            
+            // Estimate time
+            const elapsed = Date.now() - startTime;
+            const processingRepos = repositories.filter(r => r.status === 'processing' || r.status === 'completed').length;
+            
+            if (processingRepos > 0 && completedRepos < totalRepos) {
+                const avgTimePerRepo = elapsed / processingRepos;
+                const remainingRepos = totalRepos - completedRepos;
+                const estimatedMs = avgTimePerRepo * remainingRepos;
+                document.getElementById('estimated-time').textContent = formatTime(estimatedMs);
+                document.getElementById('time-progress').style.width = ((processingRepos / totalRepos) * 100) + '%';
+            } else if (completedRepos === totalRepos && totalRepos > 0) {
+                document.getElementById('estimated-time').textContent = 'Done!';
+                document.getElementById('time-progress').style.width = '100%';
+                showCompletion();
+            } else {
+                document.getElementById('estimated-time').textContent = '--';
+            }
+        }
+
+        // Animate counter values
+        function animateValue(id, targetValue) {
+            const element = document.getElementById(id);
+            const currentValue = parseInt(element.textContent) || 0;
+            const increment = Math.ceil((targetValue - currentValue) / 10);
+            
+            if (currentValue !== targetValue) {
+                element.textContent = Math.min(currentValue + increment, targetValue);
+                if (currentValue + increment < targetValue) {
+                    setTimeout(() => animateValue(id, targetValue), 50);
+                }
+            }
+        }
+
+        // Format time duration
+        function formatTime(ms) {
+            const seconds = Math.floor(ms / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const hours = Math.floor(minutes / 60);
+            
+            if (hours > 0) return `${hours}h ${minutes % 60}m`;
+            if (minutes > 0) return `${minutes}m ${seconds % 60}s`;
+            return `${seconds}s`;
+        }
+
+        // Start progress tracking
+        function startProgressTracking() {
+            progressInterval = setInterval(async () => {
+                try {
+                    const response = await fetch('/api/progress');
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        updateProgress(data.progress);
+                    }
+                } catch (error) {
+                    console.error('Progress tracking error:', error);
+                }
+            }, 2000);
+        }
+
+        // Update progress with real data
+        function updateProgress(progressData) {
+            if (progressData.repositories && progressData.repositories.length > 0) {
+                progressData.repositories.forEach((backendRepo) => {
+                    let localRepo = repositories.find(r => r.id === backendRepo.id);
+                    if (!localRepo) {
+                        localRepo = {
+                            id: backendRepo.id,
+                            name: backendRepo.name,
+                            icon: '📦',
+                            description: 'Custom repository processing',
+                            status: 'waiting',
+                            progress: 0,
+                            phase: 'Queued',
+                            documentsProcessed: 0
+                        };
+                        repositories.push(localRepo);
+                    }
+                    
+                    localRepo.status = backendRepo.status;
+                    localRepo.progress = backendRepo.progress;
+                    localRepo.phase = backendRepo.phase;
+                    localRepo.documentsProcessed = backendRepo.documentsProcessed;
+                });
+                
+                renderRepositories();
+            }
+            
+            if (progressData.allCompleted || progressData.repositories?.every(r => r.status === 'completed')) {
+                showCompletion();
+            }
+            
+            updateStats();
+        }
+
+        // Start activity feed
+        function startActivityFeed() {
+            activityInterval = setInterval(async () => {
+                try {
+                    const response = await fetch('/api/activity');
+                    const data = await response.json();
+                    
+                    if (data.success && data.activities) {
+                        updateActivityFeed(data.activities);
+                    }
+                } catch (error) {
+                    console.error('Activity feed error:', error);
+                }
+            }, 3000);
+        }
+
+        // Update activity feed
+        function updateActivityFeed(activities) {
+            const container = document.getElementById('activity-list');
+            const activityHtml = activities.slice(0, 8).map(activity => {
+                const timeAgo = Math.floor((Date.now() - new Date(activity.timestamp)) / 1000);
+                const timeText = timeAgo < 60 ? `${timeAgo}s` : `${Math.floor(timeAgo / 60)}m`;
+                
+                return `
+                    <div class="activity-item">
+                        <div class="activity-time">${timeText}</div>
+                        <div class="activity-message">${activity.message}</div>
+                    </div>
+                `;
+            }).join('');
+            
+            container.innerHTML = activityHtml;
+        }
+
+        // Show completion
+        function showCompletion() {
+            clearInterval(progressInterval);
+            clearInterval(activityInterval);
+            
+            document.getElementById('completion-section').classList.add('visible');
+            
+            // Celebration effect
+            setTimeout(() => {
+                const container = document.getElementById('activity-list');
+                container.innerHTML = `
+                    <div class="activity-item">
+                        <div class="activity-time">Now</div>
+                        <div class="activity-message">🎊 All repositories processed successfully! Ready for MCP usage.</div>
+                    </div>
+                `;
+            }, 500);
+        }
+
+        // Test MCP
+        async function testMCP() {
+            try {
+                const response = await fetch('/api/test-mcp');
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('✅ MCP Connection Successful!\\n\\nYour EmbeDocs system is ready to use with Claude Code or Cursor.');
+                } else {
+                    alert('❌ MCP Connection Failed:\\n' + result.message);
+                }
+            } catch (error) {
+                alert('❌ Connection Test Failed:\\n' + error.message);
+            }
+        }
+
+        // Download config
+        function downloadConfig() {
+            const config = {
+                repositories: repositories,
+                timestamp: new Date().toISOString(),
+                version: '10.1.3-2025',
+                type: 'EmbeDocs Configuration'
+            };
+            
+            const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `embedocs-config-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Cleanup
+        window.addEventListener('beforeunload', () => {
+            if (progressInterval) clearInterval(progressInterval);
+            if (activityInterval) clearInterval(activityInterval);
+        });
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

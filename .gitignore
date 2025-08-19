@@ -98,7 +98,6 @@ ULTRATHINK_*.md
 *_ANALYSIS.md
 
 # Web UI source files (keep dist for npm)
-src/web/
 
 # Claude Code specific
 *.claude
