@@ -1,12 +1,12 @@
 {
-  "name": "mongodocs-mcp",
-  "version": "11.0.0",
+  "name": "embedocs-mcp",
+  "version": "1.0.0",
   "description": "Transform any GitHub repository into searchable vector embeddings. MCP server with smart indexing, voyage-context-3 embeddings, and semantic search for Claude/Cursor IDEs.",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "mongodocs-mcp": "bin/mongodocs-mcp",
-    "mongodocs-index": "bin/mongodocs-index"
+    "embedocs-mcp": "bin/embedocs-mcp",
+    "embedocs-index": "bin/embedocs-index"
   },
   "scripts": {
     "build": "tsc && mkdir -p dist/web/templates && cp src/web/templates/*.html dist/web/templates/",
@@ -56,11 +56,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/romiluz/mongodocs-mcp.git"
+    "url": "git+https://github.com/romiluz/embedocs-mcp.git"
   },
-  "homepage": "https://github.com/romiluz/mongodocs-mcp#readme",
+  "homepage": "https://github.com/romiluz/embedocs-mcp#readme",
   "bugs": {
-    "url": "https://github.com/romiluz/mongodocs-mcp/issues"
+    "url": "https://github.com/romiluz/embedocs-mcp/issues"
   },
   "engines": {
     "node": ">=18.0.0"

@@ -3,11 +3,11 @@
 // Check for help flag first
 if (process.argv.includes('--help') || process.argv.includes('-h')) {
   console.log(`
-🚀 MongoDB Semantic MCP Server v9.0.0 - CLEAN ARCHITECTURE
+🚀 EmbeDocs MCP Server v1.0.0 - Universal Repository Embeddings
 
 USAGE:
-  mongodocs-mcp                 Start the MCP server
-  mongodocs-mcp --help         Show this help
+  embedocs-mcp                 Start the MCP server
+  embedocs-mcp --help         Show this help
 
 CONFIGURATION:
   Model: voyage-context-3 (1024 dimensions)
@@ -17,7 +17,7 @@ ENVIRONMENT VARIABLES:
   MONGODB_URI              MongoDB Atlas connection string
   VOYAGE_API_KEY          Voyage AI API key
 
-For more info: https://github.com/romiluz/mongodocs-mcp
+For more info: https://github.com/romiluz/embedocs-mcp
 `);
   process.exit(0);
 }

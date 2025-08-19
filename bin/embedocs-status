@@ -3,11 +3,11 @@
 // Check for help flag first
 if (process.argv.includes('--help') || process.argv.includes('-h')) {
   console.log(`
-📊 MongoDB MCP Status Checker v7.2.3
+📊 EmbeDocs Status Checker v1.0.0
 
 USAGE:
-  mongodocs-status             Check database and indexing status
-  mongodocs-status --help      Show this help
+  embedocs-status             Check database and indexing status
+  embedocs-status --help      Show this help
 
 DESCRIPTION:
   Checks your MongoDB database for indexed documents and provides

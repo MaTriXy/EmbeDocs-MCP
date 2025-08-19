@@ -1,13 +1,13 @@
 {
-  "name": "mongodocs-mcp",
-  "version": "10.1.1",
-  "description": "Lightning-fast semantic search for MongoDB & Voyage AI documentation. 10,000+ documents, <500ms search.",
+  "name": "embedocs-mcp",
+  "version": "1.0.0",
+  "description": "Transform any GitHub repository into an intelligent knowledge base for AI assistants.",
   "author": "Rom Iluz",
   "license": "MIT",
   "runtime": "node",
   "main": "dist/index.js",
-  "repository": "https://github.com/romiluz/mongodocs-mcp",
-  "homepage": "https://github.com/romiluz/mongodocs-mcp#readme",
+  "repository": "https://github.com/romiluz/embedocs-mcp",
+  "homepage": "https://github.com/romiluz/embedocs-mcp#readme",
   "tools": [
     {
       "name": "search_mongodb_docs",
@@ -88,8 +88,8 @@
       "MONGODB_URI",
       "VOYAGE_API_KEY"
     ],
-    "setup_command": "mongodocs-setup",
-    "index_command": "mongodocs-index"
+    "setup_command": "embedocs-setup",
+    "index_command": "embedocs-index"
   },
   "capabilities": {
     "search": true,

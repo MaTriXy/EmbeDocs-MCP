@@ -18,7 +18,7 @@ import { config } from './config/index.js';
 // Load environment variables
 dotenv.config();
 
-class MongoDBSemanticMCP {
+class EmbedocsMCP {
   private server: Server;
   private searchService: SearchService;
   private storageService: StorageService;
@@ -26,8 +26,8 @@ class MongoDBSemanticMCP {
   constructor() {
     this.server = new Server(
       {
-        name: 'mongodocs-mcp',
-        version: '10.1.3', // Final production release with developer documentation
+        name: 'embedocs-mcp',
+        version: '1.0.0', // Universal repository embedding system
       },
       {
         capabilities: {
@@ -279,7 +279,7 @@ class MongoDBSemanticMCP {
   }
 
   private formatStatus(dbStats: any, searchStats: any): string {
-    return `**MongoDB Semantic Docs MCP Status**
+    return `**EmbeDocs MCP Status**
 
 📊 **Database Statistics:**
 - Total Documents: ${dbStats.totalDocuments}
@@ -328,7 +328,7 @@ class MongoDBSemanticMCP {
     const transport = new StdioServerTransport();
     await this.server.connect(transport);
 
-    console.error('✅ MongoDB Docs MCP Server v10.1.0 started');
+    console.error('✅ EmbeDocs MCP Server v1.0.0 started');
     console.error('🚀 Optimized 2-tool architecture: RRF hybrid + MMR advanced search');
   }
 
@@ -338,7 +338,7 @@ class MongoDBSemanticMCP {
 }
 
 // Run the server
-const server = new MongoDBSemanticMCP();
+const server = new EmbedocsMCP();
 
 // Handle graceful shutdown
 process.on('SIGINT', async () => {
@@ -357,4 +357,4 @@ server.start().catch((error) => {
   process.exit(1);
 });
 
-export default MongoDBSemanticMCP;
+export default EmbedocsMCP;
