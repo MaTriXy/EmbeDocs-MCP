@@ -14,11 +14,12 @@
 [![npm version](https://img.shields.io/npm/v/embedocs-mcp.svg)](https://www.npmjs.com/package/embedocs-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Node.js Version](https://img.shields.io/node/v/embedocs-mcp.svg)](https://nodejs.org)
+[![Website](https://img.shields.io/badge/Website-embedocs.site-blue)](https://embedocs.site/)
 
 **Stop googling outdated Stack Overflow. Give your AI access to the LATEST documentation.**  
 *AI knowledge cutoffs are killing developer productivity*
 
-[🚀 Quick Start](#-quick-start) • [⚡ Power of Semantic Search](#-the-semantic-search-advantage) • [🎯 Examples](#-real-world-examples) • [📖 Setup](#-setup-guide)
+[🌐 Website](https://embedocs.site/) • [🚀 Quick Start](#-quick-start) • [⚡ Power of Semantic Search](#-the-semantic-search-advantage) • [🎯 Examples](#-real-world-examples) • [📖 Setup](#-setup-guide)
 
 </div>
 
@@ -157,12 +158,23 @@ Or manually run setup anytime:
 ```bash
 embedocs setup
 ```
+
+### **🎨 Beautiful Web Interface**
+
+<div align="center">
+  <img src="https://github.com/romiluz13/EmbeDocs-MCP/assets/your-image-path/embedocs-ui.png" alt="EmbeDocs Setup Wizard" width="800">
+  <br>
+  <em>Modern, intuitive setup wizard with a stunning 2025 UI design</em>
+</div>
+
 **🌐 Opens a stunning web interface in your browser!**
 - Visual setup wizard with beautiful 2025 UI design
-- Step-by-step guidance for MongoDB Atlas (FREE)
-- Easy Voyage AI key setup (FREE - 50M tokens/month)
-- Pick from popular repos or add your own
+- Step-by-step guided configuration process
+- Easy API credential setup for MongoDB Atlas (FREE)
+- Simple Voyage AI key configuration (FREE - 50M tokens/month)
+- Pick from popular documentation repos or add your own custom GitHub repositories
 - All configuration saved automatically to `.env`
+- Real-time connection testing and validation
 
 ### **Step 3: Index Documentation**
 
@@ -484,7 +496,7 @@ npm install -g embedocs-mcp && embedocs
 
 **Give your AI access to current, accurate documentation in 60 seconds**
 
-**[⭐ Star on GitHub](https://github.com/romiluz13/EmbeDocs-MCP)** • **[📦 npm Package](https://www.npmjs.com/package/embedocs-mcp)** • **[🐛 Report Issues](https://github.com/romiluz13/EmbeDocs-MCP/issues)**
+**[🌐 Website](https://embedocs.site/)** • **[⭐ Star on GitHub](https://github.com/romiluz13/EmbeDocs-MCP)** • **[📦 npm Package](https://www.npmjs.com/package/embedocs-mcp)** • **[🐛 Report Issues](https://github.com/romiluz13/EmbeDocs-MCP/issues)**
 
 *"AI knowledge cutoffs are killing developer productivity. EmbeDocs fixes that."*
 
