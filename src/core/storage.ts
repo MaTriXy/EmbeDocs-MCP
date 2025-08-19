@@ -55,9 +55,11 @@ export class StorageService {
     await this.client.connect();
     this.db = this.client.db(config.storage.database);
     
-    // Ensure BOTH vector and text indexes exist
+    // CRITICAL: Ensure BOTH indexes exist AND are ready before proceeding
+    console.log('🔍 Checking search indexes...');
     await this.ensureVectorIndex();
     await this.ensureTextIndex();
+    console.log('✅ All search indexes are READY!');
   }
   
   async disconnect(): Promise<void> {
@@ -342,15 +344,17 @@ export class StorageService {
   }
   
   /**
-   * Ensure vector index exists
+   * Ensure vector index exists and is READY
    */
   private async ensureVectorIndex(): Promise<void> {
     const collection = this.getCollection();
     
     try {
       const indexes = await collection.listSearchIndexes().toArray();
+      const existingIndex = indexes.find((i: any) => i.name === config.storage.vectorIndexName);
       
-      if (!indexes.find((i: any) => i.name === config.storage.vectorIndexName)) {
+      if (!existingIndex) {
+        console.log(`🔨 Creating vector search index (this takes 1-2 minutes)...`);
         await collection.createSearchIndex({
           name: config.storage.vectorIndexName,
           type: 'vectorSearch',
@@ -366,15 +370,50 @@ export class StorageService {
           },
         });
         
-        console.log(`✅ Created vector index with ${config.embedding.dimensions} dimensions`);
+        // CRITICAL: Wait for index to be READY (not just created)
+        console.log(`⏳ Waiting for vector index to be ready...`);
+        await this.waitForIndexReady(config.storage.vectorIndexName);
+        console.log(`✅ Vector index is READY with ${config.embedding.dimensions} dimensions`);
+      } else if ((existingIndex as any).status !== 'READY') {
+        console.log(`⏳ Vector index exists but not ready (status: ${(existingIndex as any).status}). Waiting...`);
+        await this.waitForIndexReady(config.storage.vectorIndexName);
+        console.log(`✅ Vector index is now READY`);
+      } else {
+        console.log(`✅ Vector index already exists and is READY`);
       }
     } catch (error) {
-      console.warn('Could not create vector index:', error);
+      console.error('❌ CRITICAL: Could not create vector index:', error);
+      throw new Error(`Vector index creation failed: ${error}`);
     }
   }
   
   /**
-   * Ensure text index exists for keyword search
+   * Wait for a search index to be ready
+   */
+  private async waitForIndexReady(indexName: string, maxWaitTime: number = 120000): Promise<void> {
+    const collection = this.getCollection();
+    const startTime = Date.now();
+    
+    while (Date.now() - startTime < maxWaitTime) {
+      const indexes = await collection.listSearchIndexes().toArray();
+      const index = indexes.find((i: any) => i.name === indexName);
+      
+      if (index && (index as any).status === 'READY') {
+        return;
+      }
+      
+      const elapsed = Math.round((Date.now() - startTime) / 1000);
+      console.log(`⏳ Waiting for ${indexName} to be ready... (${elapsed}s elapsed, status: ${(index as any)?.status || 'CREATING'})`);
+      
+      // Wait 5 seconds before checking again
+      await new Promise(resolve => setTimeout(resolve, 5000));
+    }
+    
+    throw new Error(`Index ${indexName} not ready after ${maxWaitTime / 1000} seconds`);
+  }
+  
+  /**
+   * Ensure text index exists for keyword search and is READY
    * Based on: https://github.com/JohnGUnderwood/atlas-hybrid-search/blob/main/create-search-indexes.mjs
    */
   private async ensureTextIndex(): Promise<void> {
@@ -382,8 +421,10 @@ export class StorageService {
     
     try {
       const indexes = await collection.listSearchIndexes().toArray();
+      const existingIndex = indexes.find((i: any) => i.name === 'text_index');
       
-      if (!indexes.find((i: any) => i.name === 'text_index')) {
+      if (!existingIndex) {
+        console.log(`🔨 Creating text search index (this takes 1-2 minutes)...`);
         await collection.createSearchIndex({
           name: 'text_index',
           definition: {
@@ -423,10 +464,20 @@ export class StorageService {
           }
         });
         
-        console.log('✅ Created text search index for keyword search');
+        // CRITICAL: Wait for index to be READY (not just created)
+        console.log(`⏳ Waiting for text index to be ready...`);
+        await this.waitForIndexReady('text_index');
+        console.log(`✅ Text index is READY for keyword search`);
+      } else if ((existingIndex as any).status !== 'READY') {
+        console.log(`⏳ Text index exists but not ready (status: ${(existingIndex as any).status}). Waiting...`);
+        await this.waitForIndexReady('text_index');
+        console.log(`✅ Text index is now READY`);
+      } else {
+        console.log(`✅ Text index already exists and is READY`);
       }
     } catch (error) {
-      console.warn('Could not create text index:', error);
+      console.error('❌ CRITICAL: Could not create text index:', error);
+      throw new Error(`Text index creation failed: ${error}`);
     }
   }
   
@@ -461,6 +512,30 @@ export class StorageService {
     const state = await stateCollection.findOne({ repoName });
     
     return state?.commitHash || null;
+  }
+  
+  /**
+   * Check if all indexes are ready
+   */
+  async checkIndexesReady(): Promise<{ ready: boolean; details: any[] }> {
+    const collection = this.getCollection();
+    try {
+      const indexes = await collection.listSearchIndexes().toArray();
+      const vectorIndex = indexes.find((i: any) => i.name === config.storage.vectorIndexName);
+      const textIndex = indexes.find((i: any) => i.name === 'text_index');
+      
+      const ready = (vectorIndex as any)?.status === 'READY' && (textIndex as any)?.status === 'READY';
+      
+      return {
+        ready,
+        details: [
+          { name: config.storage.vectorIndexName, status: (vectorIndex as any)?.status || 'NOT_FOUND' },
+          { name: 'text_index', status: (textIndex as any)?.status || 'NOT_FOUND' }
+        ]
+      };
+    } catch (error) {
+      return { ready: false, details: [] };
+    }
   }
   
   /**

@@ -1,6 +1,6 @@
 {
   "name": "embedocs-mcp",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "Transform any GitHub repository into searchable vector embeddings. MCP server with smart indexing, voyage-context-3 embeddings, and semantic search for Claude/Cursor IDEs.",
   "type": "module",
   "main": "dist/index.js",
