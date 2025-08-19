@@ -15,9 +15,10 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: 'Embedocs - AI That Actually Knows Your Docs',
-  description: 'Stop googling outdated Stack Overflow. Give your AI access to the LATEST documentation with semantic search powered by voyage-context-3 embeddings.',
+  description: 'Upgrade from keyword search to semantic understanding. Give your AI documentation search that understands meaning, not just matching words.',
   keywords: ['AI', 'documentation', 'semantic search', 'MCP', 'MongoDB', 'vector search', 'embeddings', 'developer tools'],
   authors: [{ name: 'Rom Iluz' }],
+  metadataBase: new URL('https://embedocs.ai'),
   openGraph: {
     title: 'Embedocs - AI That Actually Knows Your Docs',
     description: 'Transform any GitHub repository into searchable vector embeddings. Give your AI current, accurate documentation knowledge in minutes.',
