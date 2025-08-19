@@ -106,4 +106,14 @@ src/web/
 memory-*.json
 
 # Cursor specific
+.cursor/# Sensitive files - never commit
 .cursor/
+.repos/
+*_DEPLOYMENT_*.md
+*_COMPLETE.md
+validate-*.js
+test-*.js
+embedocs-status.js
+logs/
+*.log
+
