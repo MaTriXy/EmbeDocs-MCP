@@ -191,13 +191,24 @@ embedocs https://github.com/mongodb/docs
 {
   "mcpServers": {
     "embedocs": {
-      "command": "embedocs-mcp"
+      "command": "npx",
+      "args": ["embedocs-mcp"]
     }
   }
 }
 ```
 
-**Claude Desktop**: Add through Settings → Model Context Protocol
+**Claude Desktop** (Same configuration):
+```json
+{
+  "mcpServers": {
+    "embedocs": {
+      "command": "npx",
+      "args": ["embedocs-mcp"]
+    }
+  }
+}
+```
 
 ### **Step 5: Ask Current Questions!**
 Your AI now has access to the LATEST documentation! 🎉
