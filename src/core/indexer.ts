@@ -24,11 +24,21 @@ export class Indexer {
   private storageService: StorageService;
   private advancedChunker: AdvancedSemanticChunker;
   private progressCallback?: (progress: IndexingProgress) => void;
+  private dynamicConfig?: any; // Optional dynamic configuration from web UI
   
-  constructor() {
+  constructor(dynamicConfig?: any) {
     this.embeddingService = EmbeddingService.getInstance();
     this.storageService = StorageService.getInstance();
     this.advancedChunker = new AdvancedSemanticChunker();
+    this.dynamicConfig = dynamicConfig;
+    
+    // Log configuration source
+    if (dynamicConfig) {
+      console.log('🎯 Indexer initialized with dynamic configuration from web UI');
+      console.log('📚 User-selected repositories:', dynamicConfig.repositories?.map((r: any) => r.name));
+    } else {
+      console.log('🎯 Indexer initialized with default configuration');
+    }
   }
   
   /**
@@ -36,6 +46,13 @@ export class Indexer {
    */
   onProgress(callback: (progress: IndexingProgress) => void) {
     this.progressCallback = callback;
+  }
+  
+  /**
+   * Get repositories from dynamic config or default config
+   */
+  private getRepositories() {
+    return this.dynamicConfig?.repositories || config.repositories;
   }
   
   /**
@@ -49,7 +66,7 @@ export class Indexer {
     
     let anyRepoWasNew = false;
     
-    for (const repo of config.repositories) {
+    for (const repo of this.getRepositories()) {
       try {
         const repoPath = path.join('.repos', repo.repo.replace('/', '_'));
         
@@ -109,7 +126,7 @@ export class Indexer {
     
     console.log('🔥 FORCE REBUILD: Re-indexing everything from scratch...');
     
-    for (const repo of config.repositories) {
+    for (const repo of this.getRepositories()) {
       await this.indexRepository(repo);
       
       // Store hash after successful indexing
@@ -194,10 +211,10 @@ export class Indexer {
     
     this.updateProgress({ phase: 'scanning', currentRepo: repo.name, current: 0, total: 0 });
     
-    // Find all markdown files or use specific files
+    // Find all supported files or use specific files
     const files = specificFiles 
       ? specificFiles.map(f => path.join(repoPath, f))
-      : await this.findMarkdownFiles(repoPath);
+      : await this.findSupportedFiles(repoPath);
     
     let processed = 0;
     const totalFiles = files.length;
@@ -305,11 +322,187 @@ export class Indexer {
   }
   
   /**
-   * Find documentation files - COMPREHENSIVE search
+   * Find all supported documentation and code files for indexing
    */
-  private async findMarkdownFiles(dir: string): Promise<string[]> {
+  private async findSupportedFiles(dir: string): Promise<string[]> {
     const files: string[] = [];
-    const extensions = ['.md', '.markdown', '.mdx', '.rst', '.txt'];
+    const extensions = [
+      // === DOCUMENTATION FILES ===
+      '.md', '.markdown', '.mdx', '.rst', '.txt', '.adoc', '.wiki', '.org',
+      
+      // === FRONTEND/WEB ===
+      '.js', '.ts', '.jsx', '.tsx', '.mjs', '.cjs',  // JavaScript/TypeScript
+      '.vue', '.svelte', '.astro',                    // Framework files
+      '.html', '.htm', '.xhtml',                      // HTML
+      '.css', '.scss', '.sass', '.less', '.stylus',   // Styles
+      
+      // === BACKEND LANGUAGES ===
+      '.py', '.pyw', '.pyi',                          // Python
+      '.java', '.kt', '.scala',                       // JVM languages
+      '.rb', '.rbw',                                  // Ruby
+      '.php', '.phtml',                               // PHP
+      '.go',                                          // Go
+      '.rs',                                          // Rust
+      '.cs', '.fs', '.vb',                           // .NET languages
+      '.cpp', '.cc', '.cxx', '.c++', '.c', '.h', '.hpp', '.hxx', // C/C++
+      '.swift',                                       // Swift
+      '.m', '.mm',                                    // Objective-C
+      '.r', '.R',                                     // R
+      '.jl',                                          // Julia
+      '.mat',                                         // MATLAB
+      '.lua',                                         // Lua
+      '.perl', '.pl', '.pm',                         // Perl
+      '.dart',                                        // Dart/Flutter
+      '.elm',                                         // Elm
+      '.clj', '.cljs', '.cljc',                      // Clojure
+      '.ex', '.exs',                                 // Elixir
+      '.erl', '.hrl',                                // Erlang
+      '.hs', '.lhs',                                 // Haskell
+      '.ml', '.mli',                                 // OCaml
+      '.nim',                                         // Nim
+      '.crystal', '.cr',                              // Crystal
+      '.zig',                                         // Zig
+      '.v',                                           // V
+      '.d',                                           // D
+      '.pas', '.pp',                                  // Pascal
+      '.f90', '.f95', '.f03', '.f08', '.for', '.f',  // Fortran
+      '.cob', '.cbl',                                // COBOL
+      '.ada', '.adb', '.ads',                        // Ada
+      
+      // === CONFIGURATION FILES ===
+      '.json', '.json5', '.jsonc',                   // JSON variants
+      '.yaml', '.yml',                               // YAML
+      '.toml',                                       // TOML
+      '.ini', '.cfg', '.conf', '.config',           // Config files
+      '.xml', '.plist',                              // XML formats
+      '.properties',                                 // Properties
+      '.env', '.dotenv',                            // Environment
+      '.editorconfig', '.gitignore', '.gitattributes', // Git config
+      
+      // === BUILD & PACKAGE FILES ===
+      '.gradle', '.maven', '.sbt',                   // Build tools
+      'package.json', 'requirements.txt', 'Pipfile', // Package managers
+      'Cargo.toml', 'Cargo.lock',                    // Rust
+      'pom.xml', 'build.gradle', 'build.sbt',       // JVM builds
+      'composer.json', 'package-lock.json', 'yarn.lock', // Dependencies
+      'Gemfile', 'Gemfile.lock',                     // Ruby
+      'pubspec.yaml',                                // Dart/Flutter
+      'mix.exs',                                     // Elixir
+      'stack.yaml', 'cabal.project',                 // Haskell
+      
+      // === DEVOPS & INFRASTRUCTURE ===
+      '.tf', '.tfvars',                              // Terraform
+      '.bicep',                                      // Azure Bicep
+      '.pulumi',                                     // Pulumi
+      '.ansible.yml', '.playbook.yml',              // Ansible
+      '.nomad',                                      // HashiCorp Nomad
+      '.consul',                                     // Consul
+      '.vault',                                      // Vault
+      'docker-compose.yml', 'docker-compose.yaml',  // Docker Compose
+      'Dockerfile', 'Containerfile',                 // Container files
+      '.k8s.yml', '.k8s.yaml', '.kube.yml',        // Kubernetes
+      '.helm.yml', '.helm.yaml',                     // Helm
+      '.github', '.gitlab-ci.yml', '.travis.yml',   // CI/CD
+      'Jenkinsfile', '.jenkins',                     // Jenkins
+      'azure-pipelines.yml', 'bitbucket-pipelines.yml', // Other CI
+      
+      // === DATABASE & DATA ===
+      '.sql', '.psql', '.mysql', '.sqlite',          // SQL variants
+      '.graphql', '.gql',                            // GraphQL
+      '.cypher',                                     // Neo4j Cypher
+      '.mongo', '.js',                               // MongoDB scripts
+      '.cql',                                        // Cassandra
+      '.hql',                                        // Hive
+      '.pig',                                        // Apache Pig
+      '.spark',                                      // Spark
+      
+      // === SCRIPTS & AUTOMATION ===
+      '.sh', '.bash', '.zsh', '.fish',               // Unix shells
+      '.bat', '.cmd', '.ps1',                        // Windows
+      '.applescript', '.scpt',                       // macOS
+      'Makefile', 'makefile', '.make',               // Make
+      'Rakefile', '.rake',                           // Rake
+      '.ant', '.nant',                               // Ant/NAnt
+      
+      // === DATA SCIENCE & ML ===
+      '.ipynb',                                      // Jupyter Notebooks
+      '.rmd',                                        // R Markdown
+      '.qmd',                                        // Quarto Markdown
+      '.nb',                                         // Mathematica
+      '.wl', '.m',                                   // Wolfram Language
+      
+      // === MOBILE DEVELOPMENT ===
+      '.xcodeproj', '.xcworkspace',                  // Xcode
+      '.pbxproj',                                    // Xcode project
+      '.storyboard', '.xib',                         // iOS Interface
+      '.pch',                                        // Precompiled headers
+      '.modulemap',                                  // Module maps
+      
+      // === GAME DEVELOPMENT ===
+      '.cs',                                         // Unity C#
+      '.gd', '.gdscript',                           // Godot
+      '.hlsl', '.glsl', '.frag', '.vert',           // Shaders
+      '.fx', '.fxh',                                // DirectX shaders
+      '.cg', '.cginclude',                          // Cg shaders
+      '.unity', '.prefab', '.mat', '.asset',        // Unity assets
+      '.unreal', '.uasset', '.umap',                // Unreal Engine
+      
+      '.env.example', '.env.template',               // Environment templates
+      
+      // === SERIALIZATION & APIs ===
+      '.proto',                                      // Protocol Buffers
+      '.thrift',                                     // Apache Thrift
+      '.avro',                                       // Apache Avro
+      '.capnp',                                      // Cap'n Proto
+      '.flatbuf',                                    // FlatBuffers
+      '.openapi.yml', '.swagger.yml',               // API specs
+      '.raml',                                       // RAML API
+      '.wsdl',                                       // Web Services
+      
+      // === CONFIGURATION FORMATS ===
+      '.hocon',                                      // HOCON (Typesafe Config)
+      '.conf',                                       // Generic config
+      '.props',                                      // Properties
+      '.settings',                                   // Settings files
+      '.prefs',                                     // Preferences
+      
+      // === MISC IMPORTANT FILES ===
+      '.gitmodules', '.gitkeep',                    // Git
+      '.npmrc', '.yarnrc',                          // NPM/Yarn
+      '.babelrc', '.eslintrc', '.prettierrc',       // JavaScript tools
+      'tsconfig.json', 'jsconfig.json',             // TypeScript/JS config
+      'tailwind.config.js', 'webpack.config.js',   // Frontend configs
+      'vite.config.js', 'rollup.config.js',        // Build tools
+      '.pre-commit-config.yaml',                     // Pre-commit hooks
+      'pyproject.toml', 'setup.py', 'setup.cfg',   // Python packaging
+      'tox.ini', 'pytest.ini',                     // Python testing
+      '.coverage', '.coveragerc',                    // Coverage
+      'sonar-project.properties',                   // SonarQube
+    ];
+
+    // Special files without extensions (exact filename matches)
+    const specialFiles = [
+      // Documentation files
+      'README', 'CHANGELOG', 'CONTRIBUTING', 'LICENSE', 'AUTHORS',
+      'INSTALL', 'NEWS', 'HISTORY', 'COPYING', 'NOTICE', 'CREDITS',
+      'ACKNOWLEDGMENTS', 'PATENTS', 'THIRD_PARTY', 'MAINTAINERS',
+      // Build files
+      'Dockerfile', 'Containerfile', 'Vagrantfile', 'Brewfile', 'Podfile',
+      'Makefile', 'makefile', 'GNUmakefile', 'Rakefile', 'Cakefile',
+      'Jakefile', 'Snakefile', 'Justfile',
+      // CI/CD files
+      'Jenkinsfile', 'Buildfile', 'Procfile', 'Capfile',
+      // Mobile development
+      'Fastfile', 'Appfile', 'Deliverfile', 'Matchfile', 'Scanfile',
+      // Package management
+      'Berksfile', 'Thorfile', 'Guarfile', 'Gemfile', 'Pipfile',
+      // Version control
+      'CODEOWNERS', 'FUNDING', 'SECURITY',
+      // Project files
+      'ROADMAP', 'ARCHITECTURE', 'DESIGN', 'PHILOSOPHY', 'VISION',
+      'GOVERNANCE', 'CODE_OF_CONDUCT', 'SUPPORT', 'TROUBLESHOOTING'
+    ];
+
     const maxDepth = 10; // Search deeper
     
     async function walk(currentDir: string, depth: number = 0) {
@@ -328,12 +521,15 @@ export class Indexer {
               await walk(fullPath, depth + 1);
             }
           } else if (entry.isFile()) {
-            // Check for documentation files
+            // Check for supported files (by extension or special filename)
             const ext = path.extname(entry.name).toLowerCase();
-            if (extensions.includes(ext)) {
+            const filename = entry.name;
+            const isSupported = extensions.includes(ext) || specialFiles.includes(filename);
+            
+            if (isSupported) {
               // Also check file size - skip huge files
               const stats = await fs.stat(fullPath);
-              if (stats.size < 5_000_000) { // 5MB max
+              if (stats.size < 10_000_000) { // 10MB max (increased for code files)
                 files.push(fullPath);
               }
             }
@@ -345,7 +541,7 @@ export class Indexer {
     }
     
     await walk(dir);
-    console.log(`📄 Found ${files.length} documentation files`);
+    console.log(`📄 Found ${files.length} files (code, docs, config, and special files)`);
     return files;
   }
   

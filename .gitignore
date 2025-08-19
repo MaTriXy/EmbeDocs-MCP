@@ -80,7 +80,30 @@ CLI_COMMANDS.md
 atlas-search-playground-chatbot-starter-main/
 docs/
 
+# Planning and Audit Files
+COMPREHENSIVE_SYSTEM_AUDIT.md
+EMBEDOCS_SUCCESS_SUMMARY.md
+EMBEDOCS_WEB_COMPLETE.md
+EMBEDOCS_WEB_UI_MASTER_PLAN.md
+MEMORY_UPDATE_COMPLETE_EMBEDOCS.md
+embedocs-status.js
+CRITICAL_*.md
+EMERGENCY_*.md
+TODO_*.md
+NOTES_*.md
+PLAN_*.md
+SAAS_*.md
+ULTRATHINK_*.md
+*_GUIDE.md
+*_ANALYSIS.md
+
+# Web UI source files (keep dist for npm)
+src/web/
+
 # Claude Code specific
 *.claude
 .claude-memory
 memory-*.json
+
+# Cursor specific
+.cursor/

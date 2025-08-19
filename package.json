@@ -1,7 +1,7 @@
 {
   "name": "mongodocs-mcp",
-  "version": "10.1.3",
-  "description": "Optimized MongoDB MCP with 2-tool architecture: RRF hybrid + MMR advanced search. Features smart indexing, voyage-context-3 embeddings, and 7.5x speed optimization for Claude/Cursor.",
+  "version": "11.0.0",
+  "description": "Transform any GitHub repository into searchable vector embeddings. MCP server with smart indexing, voyage-context-3 embeddings, and semantic search for Claude/Cursor IDEs.",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
@@ -9,7 +9,7 @@
     "mongodocs-index": "bin/mongodocs-index"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && mkdir -p dist/web/templates && cp src/web/templates/*.html dist/web/templates/",
     "dev": "tsc --watch",
     "start": "node dist/index.js",
     "index": "node dist/cli.js",
@@ -19,6 +19,8 @@
     "stats": "node dist/cli.js stats",
     "test:embed": "node dist/cli.js test",
     "progress": "node dist/cli/progress-ui.js",
+    "web": "node dist/web/launch.js",
+    "status": "node embedocs-status.js",
     "prepublishOnly": "npm run clean && npm run build",
     "clean": "rm -rf dist",
     "lint": "eslint src --ext .ts",
@@ -32,14 +34,18 @@
   },
   "keywords": [
     "mcp",
-    "mongodb",
+    "model-context-protocol",
     "semantic-search",
     "vector-search",
     "voyage-ai",
-    "documentation",
-    "atlas",
-    "cursor-ide",
     "embeddings",
+    "github",
+    "documentation",
+    "code-search",
+    "mongodb-atlas",
+    "cursor-ide",
+    "claude-desktop",
+    "rag",
     "ai"
   ],
   "author": "Rom Iluz <rom@iluz.net>",
@@ -63,7 +69,6 @@
     "@langchain/community": "^0.3.51",
     "@langchain/core": "^0.3.71",
     "@modelcontextprotocol/sdk": "^1.0.0",
-    "@mongodocs/documentation-corpus": "file:../mongodocs-corpus",
     "axios": "^1.6.0",
     "boxen": "^7.1.1",
     "chalk": "^5.3.0",
@@ -106,7 +111,6 @@
     "bin/",
     "README.md",
     "LICENSE",
-    "ARCHITECTURE.md",
     ".env.example"
   ]
 }
