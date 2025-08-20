@@ -162,7 +162,7 @@ embedocs setup
 ### **🎨 Beautiful Web Interface**
 
 <div align="center">
-  <img src="https://github.com/romiluz13/EmbeDocs-MCP/assets/your-image-path/embedocs-ui.png" alt="EmbeDocs Setup Wizard" width="800">
+  <img src="https://i.postimg.cc/HL9hf7VS/Screenshot-2025-08-19-at-15-29-52.png" alt="EmbeDocs Setup Wizard" width="800">
   <br>
   <em>Modern, intuitive setup wizard with a stunning 2025 UI design</em>
 </div>
@@ -204,7 +204,11 @@ embedocs https://github.com/mongodb/docs
   "mcpServers": {
     "embedocs": {
       "command": "npx",
-      "args": ["embedocs-mcp"]
+      "args": ["embedocs-mcp"],
+      "env": {
+        "MONGODB_URI": "your-mongodb-connection-string",
+        "VOYAGE_API_KEY": "your-voyage-api-key"
+      }
     }
   }
 }
@@ -216,7 +220,11 @@ embedocs https://github.com/mongodb/docs
   "mcpServers": {
     "embedocs": {
       "command": "npx",
-      "args": ["embedocs-mcp"]
+      "args": ["embedocs-mcp"],
+      "env": {
+        "MONGODB_URI": "your-mongodb-connection-string",
+        "VOYAGE_API_KEY": "your-voyage-api-key"
+      }
     }
   }
 }
