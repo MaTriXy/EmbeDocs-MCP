@@ -162,7 +162,7 @@ embedocs setup
 ### **🎨 Beautiful Web Interface**
 
 <div align="center">
-  <img src="https://i.postimg.cc/HL9hf7VS/Screenshot-2025-08-19-at-15-29-52.png" alt="EmbeDocs Setup Wizard" width="800">
+  <img src="https://embedocs.site/pics/Screenshot%202025-08-19%20at%2015.29.52.png" alt="EmbeDocs Setup Wizard" width="800">
   <br>
   <em>Modern, intuitive setup wizard with a stunning 2025 UI design</em>
 </div>
