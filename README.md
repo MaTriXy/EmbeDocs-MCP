@@ -214,7 +214,7 @@ embedocs https://github.com/mongodb/docs
 }
 ```
 
-**Claude Desktop** (Same configuration):
+**Claude Code** (Same configuration):
 ```json
 {
   "mcpServers": {
