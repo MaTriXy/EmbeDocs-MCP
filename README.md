@@ -104,9 +104,16 @@ Traditional search finds words. **EmbeDocs understands MEANING.**
 
 ### **👨‍💻 Keep Up With Fast-Moving Projects**
 ```bash
-# Index the latest docs
-embedocs index https://github.com/facebook/react
-embedocs index https://github.com/microsoft/TypeScript
+# Add repos via web interface
+embedocs setup
+
+# Select and add:
+# - facebook/react (Latest React documentation)
+# - microsoft/TypeScript (Current TypeScript docs)
+# - Your company's documentation repos
+
+# Then index them all:
+embedocs index
 
 # Now your AI knows CURRENT features:
 "What's new in React 19?"
@@ -116,9 +123,13 @@ embedocs index https://github.com/microsoft/TypeScript
 
 ### **🏢 Company Internal Documentation**
 ```bash
-# Index your company's private repos
-embedocs index https://github.com/yourcompany/api-docs
-embedocs index https://github.com/yourcompany/architecture-guide
+# Add your company repos through the web interface
+embedocs setup
+
+# Add your private repositories:
+# - yourcompany/api-docs
+# - yourcompany/architecture-guide
+# - yourcompany/internal-wiki
 
 # Your AI now understands your business:
 "How does our payment processing work?"
@@ -128,10 +139,13 @@ embedocs index https://github.com/yourcompany/architecture-guide
 
 ### **📚 Master New Technologies**
 ```bash
-# Index cutting-edge projects
-embedocs index https://github.com/vercel/next.js
-embedocs index https://github.com/openai/openai-python
-embedocs index https://github.com/langchain-ai/langchain
+# Use the web interface to add cutting-edge projects
+embedocs setup
+
+# Add repositories like:
+# - vercel/next.js
+# - openai/openai-python
+# - langchain-ai/langchain
 
 # Learn from the source:
 "How does Next.js App Router actually work?"
@@ -176,25 +190,25 @@ embedocs setup
 - All configuration saved automatically to `.env`
 - Real-time connection testing and validation
 
-### **Step 3: Index Documentation**
+### **Step 3: Add & Index Your Documentation**
 
-**Option A: Using Web Interface** (Recommended)
-- The setup wizard will offer to start indexing automatically
-- Select repos and click "Start Indexing"
-
-**Option B: Manual Command Line**
+**Option A: Using Web Interface** (Recommended ✨)
 ```bash
-# First, make sure you have .env file with credentials
-# (created automatically by setup wizard)
-
-# Index specific repos  
-embedocs-index https://github.com/mongodb/docs
-embedocs-index https://github.com/facebook/react
-embedocs-index https://github.com/your-company/documentation
-
-# Or use the shorthand
-embedocs https://github.com/mongodb/docs
+embedocs setup  # or just 'embedocs' on first run
 ```
+- Select from popular repos or add your own custom GitHub repositories
+- Click "Start Indexing" to begin
+- All selected repos are saved for future CLI use
+
+**Option B: Command Line** (After adding repos via web)
+```bash
+# After adding repos through web interface:
+embedocs index    # Indexes all your selected repositories
+embedocs update   # Updates only changed files
+embedocs rebuild  # Force re-index everything
+```
+
+**Important**: You must first add repositories using the web interface (`embedocs setup`). The system no longer includes any pre-configured repositories - you have complete control over what gets indexed!
 
 ### **Step 4: Connect to Your AI**
 **Cursor IDE** (Recommended):
@@ -463,9 +477,16 @@ VOYAGE_API_KEY=pa-your-api-key-here
 ```
 
 ### **Indexing Issues**
+- **"No repositories configured"**: Run `embedocs setup` to add repositories first
 - **Rate limit errors**: Voyage AI free tier is limited to 2000 RPM - indexing automatically handles this
 - **"0 chunks" for some files**: Normal for very small files
 - **Process seems stuck**: Check `embedocs progress` for real-time status
+
+### **Repository Management**
+- All repositories are stored in `.repos/metadata.json`
+- No hardcoded/default repositories - you control what gets indexed
+- Add repos via web interface: `embedocs setup`
+- Remove repos by editing `.repos/metadata.json` or using web interface
 
 ## 🤝 **Contributing**
 

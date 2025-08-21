@@ -52,50 +52,13 @@ export const config = {
     }
   },
   
-  // Repository Configuration - OPTIMIZED FOR PRODUCTION v10.0.0
-  // No redundancy - each repo has unique, valuable content
-  repositories: [
-    {
-      name: 'MongoDB Official Documentation (Core)',
-      repo: 'mongodb/docs',
-      branch: 'master',
-      product: 'docs',
-      version: '8.2',
-      priority: 10  // Essential: Complete MongoDB documentation
-    },
-    {
-      name: 'GenAI Showcase (3.9k⭐ - Best AI/RAG Examples)',
-      repo: 'mongodb-developer/GenAI-Showcase',
-      branch: 'main',
-      product: 'genai',
-      version: 'latest',
-      priority: 9  // Critical: Most comprehensive AI/Vector Search examples
-    },
-    {
-      name: 'MongoDB Chatbot (Official RAG Implementation)',
-      repo: 'mongodb/chatbot',
-      branch: 'main',
-      product: 'rag',
-      version: 'latest',
-      priority: 8  // Important: Production RAG with Atlas Vector Search
-    },
-    {
-      name: 'Vector Search Notebooks (Tutorials)',
-      repo: 'mongodb/docs-notebooks',
-      branch: 'main',
-      product: 'tutorials',
-      version: 'latest',
-      priority: 7  // Valuable: Step-by-step Vector Search tutorials
-    },
-    {
-      name: 'Multimodal AI Agents Lab',
-      repo: 'mongodb-developer/multimodal-agents-lab',
-      branch: 'main',
-      product: 'agents',
-      version: 'latest',
-      priority: 6  // Cutting-edge: Multimodal AI with MongoDB + LangGraph
-    }
-  ]
+  // Repository Configuration
+  // REMOVED: Hardcoded repositories are no longer used
+  // The system now ONLY uses repositories explicitly added by users via:
+  // 1. Web UI (npm run web)
+  // 2. Manual editing of .repos/metadata.json
+  // This ensures users have full control over what gets indexed
+  repositories: []  // Empty - all repos come from .repos/metadata.json
 } as const;
 
 // Type exports for clean interfaces

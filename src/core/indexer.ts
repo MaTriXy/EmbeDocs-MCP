@@ -49,89 +49,50 @@ export class Indexer {
   }
   
   /**
-   * Get repositories from dynamic config or user-defined repositories only
-   * NEVER use hardcoded repositories unless explicitly requested
+   * Get repositories from dynamic config or user-defined metadata
+   * NO HARDCODED REPOSITORIES - only what user explicitly added
    */
   private async getRepositories() {
-    // If dynamic config provided (from web UI), use it
+    // 1. If dynamic config provided (from web UI), use it
     if (this.dynamicConfig?.repositories) {
       return this.dynamicConfig.repositories;
     }
 
-    // For CLI usage: Load user-defined repositories from database
+    // 2. For CLI: Read from .repos/metadata.json
     try {
-      const userRepos = await this.loadUserRepositories();
-      if (userRepos.length > 0) {
-        console.log(`📂 Found ${userRepos.length} user-defined repositories`);
-        return userRepos;
+      const metadataPath = path.join('.repos', 'metadata.json');
+      const metadataContent = await fs.readFile(metadataPath, 'utf-8');
+      const metadata = JSON.parse(metadataContent);
+      
+      if (metadata.repositories && metadata.repositories.length > 0) {
+        console.log(`📂 Found ${metadata.repositories.length} user-defined repositories`);
+        return metadata.repositories;
       }
     } catch (error) {
-      console.warn('Could not load user repositories:', error);
+      // Metadata file doesn't exist or is invalid
+      console.log('ℹ️  No .repos/metadata.json found');
     }
 
-    // If no user repositories found, show helpful message
-    console.log('📝 No repositories configured. Use the web UI to add repositories:');
-    console.log('   embedocs setup');
-    console.log('');
-    console.log('Or add a repository directly:');
-    console.log('   embedocs-mcp index --repository <repo-url> --name "<name>" --description "<desc>"');
-
+    // 3. No repositories configured - show helpful message
+    console.log('\n📝 No repositories configured!');
+    console.log('   Please add repositories using one of these methods:\n');
+    console.log('   1. Web UI (recommended):');
+    console.log('      npm run web');
+    console.log('      Then open http://localhost:5462\n');
+    console.log('   2. Manual: Create .repos/metadata.json with your repositories');
+    console.log('\n   Example metadata.json:');
+    console.log('   {');
+    console.log('     "version": "1.0.0",');
+    console.log('     "repositories": [{');
+    console.log('       "name": "My Repo",');
+    console.log('       "repo": "owner/repo",');
+    console.log('       "branch": "main",');
+    console.log('       "product": "custom-owner-repo",');
+    console.log('       "version": "latest"');
+    console.log('     }]');
+    console.log('   }');
+    
     return [];
-  }
-
-  /**
-   * Load user-defined repositories from database
-   */
-  private async loadUserRepositories() {
-    await this.storageService.connect();
-
-    // Get all products from database and convert back to repository configs
-    const stats = await this.storageService.getStats();
-    const repositories = [];
-
-    for (const product of stats.products) {
-      // Skip hardcoded products, only load user-added ones
-      if (this.isHardcodedProduct(product)) {
-        continue;
-      }
-
-      // Convert product back to repository config
-      const repoConfig = await this.productToRepository(product);
-      if (repoConfig) {
-        repositories.push(repoConfig);
-      }
-    }
-
-    return repositories;
-  }
-
-  /**
-   * Check if a product is from hardcoded config
-   */
-  private isHardcodedProduct(product: string): boolean {
-    const hardcodedProducts = ['docs', 'genai', 'rag', 'tutorials', 'agents'];
-    return hardcodedProducts.includes(product);
-  }
-
-  /**
-   * Convert database product back to repository config
-   */
-  private async productToRepository(product: string) {
-    // This is a simplified conversion - in a full implementation,
-    // we'd store repository metadata in the database
-    const repoMap: Record<string, any> = {
-      'custom-mongodb-docs': {
-        name: 'MongoDB Documentation (User Added)',
-        repo: 'mongodb/docs',
-        branch: 'master',
-        product: 'custom-mongodb-docs',
-        version: 'latest',
-        priority: 5
-      }
-      // Add more mappings as needed
-    };
-
-    return repoMap[product] || null;
   }
   
   /**
@@ -145,14 +106,7 @@ export class Indexer {
     
     let anyRepoWasNew = false;
     
-    const repositories = await this.getRepositories();
-
-    if (repositories.length === 0) {
-      console.log('⚠️ No repositories to index. Exiting.');
-      return;
-    }
-
-    for (const repo of repositories) {
+    for (const repo of await this.getRepositories()) {
       try {
         const repoPath = path.join('.repos', repo.repo.replace('/', '_'));
         
@@ -212,14 +166,7 @@ export class Indexer {
     
     console.log('🔥 FORCE REBUILD: Re-indexing everything from scratch...');
     
-    const repositories = await this.getRepositories();
-
-    if (repositories.length === 0) {
-      console.log('⚠️ No repositories to rebuild. Exiting.');
-      return;
-    }
-
-    for (const repo of repositories) {
+    for (const repo of await this.getRepositories()) {
       await this.indexRepository(repo);
       
       // Store hash after successful indexing

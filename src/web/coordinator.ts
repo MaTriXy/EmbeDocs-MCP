@@ -7,6 +7,8 @@ import { Indexer, IndexingProgress } from '../core/indexer.js';
 import { EmbeddingService } from '../core/embeddings.js';
 import { StorageService } from '../core/storage.js';
 import { MongoClient } from 'mongodb';
+import * as fs from 'fs/promises';
+import * as path from 'path';
 
 export interface Credentials {
   mongodbUri: string;
@@ -301,12 +303,49 @@ export class WebCoordinator {
   }
 
   /**
+   * Save repository metadata to .repos/metadata.json
+   */
+  private async saveRepositoryMetadata(repositories: Repository[]): Promise<void> {
+    try {
+      // Ensure .repos directory exists
+      await fs.mkdir('.repos', { recursive: true });
+      
+      // Prepare metadata
+      const metadata = {
+        version: '1.0.0',
+        lastUpdated: new Date().toISOString(),
+        repositories: repositories.map(repo => ({
+          name: repo.name,
+          repo: repo.repo,
+          branch: repo.branch,
+          product: repo.id,
+          version: 'latest',
+          addedAt: new Date().toISOString(),
+          addedBy: 'web-ui',
+          localPath: repo.repo.replace('/', '_')
+        }))
+      };
+      
+      // Save to file
+      const metadataPath = path.join('.repos', 'metadata.json');
+      await fs.writeFile(metadataPath, JSON.stringify(metadata, null, 2));
+      console.log(`💾 Saved repository metadata for ${repositories.length} repositories`);
+    } catch (error) {
+      console.error('Failed to save repository metadata:', error);
+      // Non-fatal error, continue with indexing
+    }
+  }
+
+  /**
    * Start the indexing process with provided setup data
    */
   async startIndexing(setupData: SetupData): Promise<void> {
     try {
       // Set credentials
       this.setCredentials(setupData.credentials);
+
+      // Save repository metadata for CLI access
+      await this.saveRepositoryMetadata(setupData.repositories);
 
       // Create dynamic configuration based on user selections
       const dynamicConfig = this.createDynamicConfig(setupData.repositories);
