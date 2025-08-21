@@ -299,7 +299,7 @@ export class Indexer {
       // CRITICAL: Save incremental progress every 100 files
       const CHECKPOINT_INTERVAL = 100;
       if (processed % CHECKPOINT_INTERVAL === 0) {
-        console.log(`💾 Checkpoint: Saved progress at ${processed}/${totalFiles} files`);
+        console.log(`💾 Repository state saved at ${processed}/${totalFiles} files (will restart from beginning if interrupted)`);
         await this.storageService.storeRepositoryHash(repo.name, currentHash);
       }
     }

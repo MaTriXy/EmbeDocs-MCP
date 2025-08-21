@@ -160,16 +160,33 @@ export class EmbeddingService {
         
       } catch (error: any) {
         retries++;
-        
+
+        // NETWORK ERROR DETECTION - handles ENOTFOUND api.voyageai.com
+        const isNetworkError = error.code === 'ENOTFOUND' ||
+                              error.code === 'ECONNRESET' ||
+                              error.code === 'ETIMEDOUT' ||
+                              error.message?.includes('ENOTFOUND') ||
+                              error.message?.includes('ECONNRESET');
+
         // Log detailed error for debugging
         if (error.response?.data) {
           console.error('API Error Response:', JSON.stringify(error.response.data, null, 2));
+        } else if (isNetworkError) {
+          console.warn(`🌐 Network error: ${error.code || error.message}`);
         }
-        
+
         if (retries >= config.embedding.retries) {
           throw new Error(`Context embedding failed after ${config.embedding.retries} retries: ${error.message}`);
         }
-        await this.delay(1000 * retries);
+
+        // Exponential backoff for network errors, linear for API errors
+        if (isNetworkError) {
+          const delay = Math.min(1000 * Math.pow(2, retries), 30000); // Max 30s
+          console.warn(`🌐 Network retry ${retries}/${config.embedding.retries} in ${delay}ms...`);
+          await this.delay(delay);
+        } else {
+          await this.delay(1000 * retries);
+        }
       }
     }
     
@@ -221,10 +238,30 @@ export class EmbeddingService {
         
       } catch (error: any) {
         retries++;
+
+        // NETWORK ERROR DETECTION - handles ENOTFOUND api.voyageai.com
+        const isNetworkError = error.code === 'ENOTFOUND' ||
+                              error.code === 'ECONNRESET' ||
+                              error.code === 'ETIMEDOUT' ||
+                              error.message?.includes('ENOTFOUND') ||
+                              error.message?.includes('ECONNRESET');
+
+        if (isNetworkError) {
+          console.warn(`🌐 Network error: ${error.code || error.message}`);
+        }
+
         if (retries >= config.embedding.retries) {
           throw new Error(`Embedding failed after ${config.embedding.retries} retries: ${error.message}`);
         }
-        await this.delay(1000 * retries);
+
+        // Exponential backoff for network errors, linear for API errors
+        if (isNetworkError) {
+          const delay = Math.min(1000 * Math.pow(2, retries), 30000); // Max 30s
+          console.warn(`🌐 Network retry ${retries}/${config.embedding.retries} in ${delay}ms...`);
+          await this.delay(delay);
+        } else {
+          await this.delay(1000 * retries);
+        }
       }
     }
     

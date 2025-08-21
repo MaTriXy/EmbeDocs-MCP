@@ -249,8 +249,18 @@ export class SearchService {
         
         return reranked;
       }
-    } catch (error) {
-      console.warn('Reranking failed, using original order:', error);
+    } catch (error: any) {
+      // NETWORK ERROR DETECTION
+      const isNetworkError = error.code === 'ENOTFOUND' ||
+                            error.code === 'ECONNRESET' ||
+                            error.code === 'ETIMEDOUT' ||
+                            error.message?.includes('ENOTFOUND');
+
+      if (isNetworkError) {
+        console.warn('🌐 Reranking network error, using original order:', error.code || error.message);
+      } else {
+        console.warn('Reranking failed, using original order:', error.message);
+      }
     }
     
     return results.slice(0, limit);
