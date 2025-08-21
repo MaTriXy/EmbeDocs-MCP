@@ -376,20 +376,35 @@ export class AdvancedSemanticChunker {
   }
 
   /**
-   * Fallback chunking (existing method)
+   * Fallback chunking with character-level splitting for oversized content
    */
   private fallbackChunking(content: string): string[] {
     const { chunkSize, chunkOverlap } = config.indexing;
     const chunks: string[] = [];
     const sentences = content.match(/[^.!?]+[.!?]+/g) || [content];
-    
+
     let currentChunk = '';
     let overlap = '';
-    
+
     for (const sentence of sentences) {
+      // Check if this sentence alone is oversized
+      if (this.getTokenCount(sentence) > 30000) {
+        // Push current chunk if exists
+        if (currentChunk.trim()) {
+          chunks.push(overlap + currentChunk);
+          currentChunk = '';
+        }
+
+        // Use character-level splitting for oversized sentence
+        console.log(`🔄 Sentence too large (${this.getTokenCount(sentence)} tokens), using character-level splitting`);
+        const characterChunks = this.splitByCharacters(sentence, 25000); // Conservative limit
+        chunks.push(...characterChunks);
+        continue;
+      }
+
       if (currentChunk.length + sentence.length > chunkSize && currentChunk) {
         chunks.push(overlap + currentChunk);
-        
+
         const words = currentChunk.split(' ');
         overlap = words.slice(-Math.floor(chunkOverlap / 10)).join(' ') + ' ';
         currentChunk = sentence;
@@ -397,12 +412,72 @@ export class AdvancedSemanticChunker {
         currentChunk += ' ' + sentence;
       }
     }
-    
+
     if (currentChunk.trim()) {
       chunks.push(overlap + currentChunk);
     }
-    
+
     return chunks.map(c => c.trim()).filter(c => c.length > 100);
+  }
+
+  /**
+   * Character-level splitting for unsplittable content
+   * Based on Microsoft Semantic Kernel's approach
+   */
+  private splitByCharacters(text: string, maxTokens: number): string[] {
+    if (this.getTokenCount(text) <= maxTokens) {
+      return [text];
+    }
+
+    console.log(`🔧 Character-level splitting: ${this.getTokenCount(text)} tokens -> target: ${maxTokens}`);
+    const chunks: string[] = [];
+    let currentText = text;
+
+    while (currentText.length > 0) {
+      if (this.getTokenCount(currentText) <= maxTokens) {
+        chunks.push(currentText);
+        break;
+      }
+
+      // Find the split point (Microsoft SK pattern: split at halfway point)
+      const halfPoint = Math.floor(currentText.length / 2);
+      let splitPoint = halfPoint;
+
+      // Try to find a better split point near whitespace (within 10% of halfway)
+      const searchRange = Math.floor(currentText.length * 0.1);
+      const searchStart = Math.max(0, halfPoint - searchRange);
+      const searchEnd = Math.min(currentText.length, halfPoint + searchRange);
+
+      // Search backwards for whitespace first
+      for (let i = halfPoint; i >= searchStart; i--) {
+        if (/\s/.test(currentText[i])) {
+          splitPoint = i + 1; // Split after the whitespace
+          break;
+        }
+      }
+
+      // If no whitespace found backwards, try forwards
+      if (splitPoint === halfPoint) {
+        for (let i = halfPoint; i < searchEnd; i++) {
+          if (/\s/.test(currentText[i])) {
+            splitPoint = i + 1;
+            break;
+          }
+        }
+      }
+
+      // Extract the chunk and continue with the rest
+      const chunk = currentText.substring(0, splitPoint).trim();
+      if (chunk) {
+        chunks.push(chunk);
+      }
+
+      currentText = currentText.substring(splitPoint).trim();
+    }
+
+    const result = chunks.filter(chunk => chunk.length > 0);
+    console.log(`✅ Character-level split complete: ${result.length} chunks, avg tokens: ${Math.round(result.reduce((sum, chunk) => sum + this.getTokenCount(chunk), 0) / result.length)}`);
+    return result;
   }
 
   /**
