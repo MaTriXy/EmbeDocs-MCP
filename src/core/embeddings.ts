@@ -111,6 +111,17 @@ export class EmbeddingService {
       console.warn(`⚠️ Filtered ${texts.length - validTexts.length} oversized texts to prevent API errors`);
     }
 
+    // CRITICAL: Handle case where all texts are filtered out
+    if (validTexts.length === 0) {
+      console.warn(`⚠️ All texts filtered out due to size limits, returning empty embeddings`);
+      return texts.map(() => ({
+        embedding: new Array(config.embedding.dimensions).fill(0),
+        normalized: new Array(config.embedding.dimensions).fill(0),
+        dimensions: config.embedding.dimensions,
+        model: 'filtered-oversized'
+      }));
+    }
+
     while (retries < config.embedding.retries) {
       try {
         // CRITICAL: voyage-context-3 requires double-wrapped array
