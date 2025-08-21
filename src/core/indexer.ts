@@ -49,10 +49,89 @@ export class Indexer {
   }
   
   /**
-   * Get repositories from dynamic config or default config
+   * Get repositories from dynamic config or user-defined repositories only
+   * NEVER use hardcoded repositories unless explicitly requested
    */
-  private getRepositories() {
-    return this.dynamicConfig?.repositories || config.repositories;
+  private async getRepositories() {
+    // If dynamic config provided (from web UI), use it
+    if (this.dynamicConfig?.repositories) {
+      return this.dynamicConfig.repositories;
+    }
+
+    // For CLI usage: Load user-defined repositories from database
+    try {
+      const userRepos = await this.loadUserRepositories();
+      if (userRepos.length > 0) {
+        console.log(`📂 Found ${userRepos.length} user-defined repositories`);
+        return userRepos;
+      }
+    } catch (error) {
+      console.warn('Could not load user repositories:', error);
+    }
+
+    // If no user repositories found, show helpful message
+    console.log('📝 No repositories configured. Use the web UI to add repositories:');
+    console.log('   embedocs setup');
+    console.log('');
+    console.log('Or add a repository directly:');
+    console.log('   embedocs-mcp index --repository <repo-url> --name "<name>" --description "<desc>"');
+
+    return [];
+  }
+
+  /**
+   * Load user-defined repositories from database
+   */
+  private async loadUserRepositories() {
+    await this.storageService.connect();
+
+    // Get all products from database and convert back to repository configs
+    const stats = await this.storageService.getStats();
+    const repositories = [];
+
+    for (const product of stats.products) {
+      // Skip hardcoded products, only load user-added ones
+      if (this.isHardcodedProduct(product)) {
+        continue;
+      }
+
+      // Convert product back to repository config
+      const repoConfig = await this.productToRepository(product);
+      if (repoConfig) {
+        repositories.push(repoConfig);
+      }
+    }
+
+    return repositories;
+  }
+
+  /**
+   * Check if a product is from hardcoded config
+   */
+  private isHardcodedProduct(product: string): boolean {
+    const hardcodedProducts = ['docs', 'genai', 'rag', 'tutorials', 'agents'];
+    return hardcodedProducts.includes(product);
+  }
+
+  /**
+   * Convert database product back to repository config
+   */
+  private async productToRepository(product: string) {
+    // This is a simplified conversion - in a full implementation,
+    // we'd store repository metadata in the database
+    const repoMap: Record<string, any> = {
+      'custom-mongodb-docs': {
+        name: 'MongoDB Documentation (User Added)',
+        repo: 'mongodb/docs',
+        branch: 'master',
+        product: 'custom-mongodb-docs',
+        version: 'latest',
+        priority: 5
+      }
+      // Add more mappings as needed
+    };
+
+    return repoMap[product] || null;
   }
   
   /**
@@ -66,7 +145,14 @@ export class Indexer {
     
     let anyRepoWasNew = false;
     
-    for (const repo of this.getRepositories()) {
+    const repositories = await this.getRepositories();
+
+    if (repositories.length === 0) {
+      console.log('⚠️ No repositories to index. Exiting.');
+      return;
+    }
+
+    for (const repo of repositories) {
       try {
         const repoPath = path.join('.repos', repo.repo.replace('/', '_'));
         
@@ -126,7 +212,14 @@ export class Indexer {
     
     console.log('🔥 FORCE REBUILD: Re-indexing everything from scratch...');
     
-    for (const repo of this.getRepositories()) {
+    const repositories = await this.getRepositories();
+
+    if (repositories.length === 0) {
+      console.log('⚠️ No repositories to rebuild. Exiting.');
+      return;
+    }
+
+    for (const repo of repositories) {
       await this.indexRepository(repo);
       
       // Store hash after successful indexing
