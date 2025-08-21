@@ -199,22 +199,26 @@ export class Indexer {
    * @param specificFiles - Optional: only index these specific files
    */
   private async indexRepository(repo: any, specificFiles?: string[]): Promise<void> {
-    this.updateProgress({ 
-      phase: 'cloning', 
+    this.updateProgress({
+      phase: 'cloning',
       currentRepo: repo.name,
       current: 0,
       total: 0
     });
-    
+
     // Clone repository
     const repoPath = await this.cloneRepo(repo.repo, repo.branch);
-    
+
     this.updateProgress({ phase: 'scanning', currentRepo: repo.name, current: 0, total: 0 });
-    
+
     // Find all supported files or use specific files
-    const files = specificFiles 
+    const files = specificFiles
       ? specificFiles.map(f => path.join(repoPath, f))
       : await this.findSupportedFiles(repoPath);
+
+    // CRITICAL: Get current hash for incremental progress tracking
+    const git = simpleGit(repoPath);
+    const currentHash = await git.revparse(['HEAD']);
     
     let processed = 0;
     const totalFiles = files.length;
@@ -289,10 +293,17 @@ export class Indexer {
         // Store in MongoDB - USING THE SERVICE
         await this.storageService.upsertDocuments(enrichedDocs);
       }
-      
+
       processed += batch.length;
+
+      // CRITICAL: Save incremental progress every 100 files
+      const CHECKPOINT_INTERVAL = 100;
+      if (processed % CHECKPOINT_INTERVAL === 0) {
+        console.log(`💾 Checkpoint: Saved progress at ${processed}/${totalFiles} files`);
+        await this.storageService.storeRepositoryHash(repo.name, currentHash);
+      }
     }
-    
+
     console.log(`✅ Indexed ${repo.name}: ${processed} files`);
   }
   

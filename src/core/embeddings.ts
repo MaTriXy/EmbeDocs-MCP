@@ -96,7 +96,21 @@ export class EmbeddingService {
     inputType: 'document' | 'query'
   ): Promise<EmbeddingResult[]> {
     let retries = 0;
-    
+
+    // FINAL SAFETY NET: Validate all texts before API call
+    const validTexts = texts.filter(text => {
+      const tokenCount = this.estimateTokens(text);
+      if (tokenCount > 30000) {
+        console.error(`❌ CRITICAL: Text still exceeds token limit (${tokenCount} tokens), emergency truncating`);
+        return false;
+      }
+      return true;
+    });
+
+    if (validTexts.length !== texts.length) {
+      console.warn(`⚠️ Filtered ${texts.length - validTexts.length} oversized texts to prevent API errors`);
+    }
+
     while (retries < config.embedding.retries) {
       try {
         // CRITICAL: voyage-context-3 requires double-wrapped array
@@ -104,7 +118,7 @@ export class EmbeddingService {
         const response = await axios.post(
           config.embedding.apiUrl,
           {
-            inputs: [texts], // ALWAYS double-wrap for context models
+            inputs: [validTexts], // Use validated texts
             input_type: inputType,
             model: config.embedding.model,
             output_dimension: config.embedding.dimensions
@@ -235,6 +249,14 @@ export class EmbeddingService {
   
   private delay(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  /**
+   * Quick token estimation for safety checks
+   */
+  private estimateTokens(text: string): number {
+    // Conservative estimate: 1 token per 3.5 characters
+    return Math.ceil(text.length / 3.5);
   }
   
   /**

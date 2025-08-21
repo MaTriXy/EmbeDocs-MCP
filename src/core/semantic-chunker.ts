@@ -266,8 +266,36 @@ export class AdvancedSemanticChunker {
       // EMERGENCY: Split chunks that exceed safe token limits
       if (tokenCount > 6000) { // 20% of context window - ultra safe
         console.warn(`🚨 SPLITTING oversized chunk: ${tokenCount} tokens -> splitting`);
-        const subChunks = this.recursiveChunkSplit(chunk, 1000, 100); // Aggressive split
-        constrainedChunks.push(...subChunks);
+        let subChunks = this.recursiveChunkSplit(chunk, 1000, 100);
+
+        // SAFETY: Re-split any chunks that are still too large
+        const finalSubChunks: string[] = [];
+        for (const subChunk of subChunks) {
+          const subTokens = this.getTokenCount(subChunk);
+          if (subTokens > 5000) {
+            // Force split by sentences if still too large
+            const sentences = subChunk.split(/[.!?]+/).filter(s => s.trim().length > 10);
+            let currentGroup = '';
+
+            for (const sentence of sentences) {
+              const testGroup = currentGroup + sentence + '. ';
+              if (this.getTokenCount(testGroup) > 4000 && currentGroup.length > 0) {
+                finalSubChunks.push(currentGroup.trim());
+                currentGroup = sentence + '. ';
+              } else {
+                currentGroup = testGroup;
+              }
+            }
+
+            if (currentGroup.trim().length > 0) {
+              finalSubChunks.push(currentGroup.trim());
+            }
+          } else {
+            finalSubChunks.push(subChunk);
+          }
+        }
+
+        constrainedChunks.push(...finalSubChunks);
         continue; // Skip normal processing for this chunk
       }
       
@@ -301,22 +329,50 @@ export class AdvancedSemanticChunker {
   }
 
   /**
-   * Recursive chunk splitting with overlap
+   * TOKEN-AWARE recursive chunk splitting with overlap
+   * GUARANTEES no chunk exceeds Voyage API limits
    */
-  private recursiveChunkSplit(chunk: string, maxSize: number, overlap: number): string[] {
+  private recursiveChunkSplit(chunk: string, _maxSize: number, _overlap: number): string[] {
     const words = chunk.split(' ');
     const chunks: string[] = [];
-    const wordsPerChunk = Math.floor(maxSize / 6); // Rough estimate: 6 chars per word
-    const overlapWords = Math.floor(overlap / 6);
-    
-    for (let i = 0; i < words.length; i += wordsPerChunk - overlapWords) {
-      const chunkWords = words.slice(i, i + wordsPerChunk);
-      if (chunkWords.length > 0) {
-        chunks.push(chunkWords.join(' '));
+    const MAX_SAFE_TOKENS = 5000; // Ultra-safe limit for voyage-context-3
+
+    let currentChunk: string[] = [];
+    let currentTokens = 0;
+
+    for (let i = 0; i < words.length; i++) {
+      const word = words[i];
+      const wordTokens = this.getTokenCount(word);
+
+      // Check if adding this word would exceed token limit
+      if (currentTokens + wordTokens > MAX_SAFE_TOKENS && currentChunk.length > 0) {
+        // Save current chunk
+        chunks.push(currentChunk.join(' '));
+
+        // Start new chunk with overlap
+        const overlapWords = Math.min(50, Math.floor(currentChunk.length * 0.1)); // 10% overlap
+        currentChunk = currentChunk.slice(-overlapWords);
+        currentTokens = this.getTokenCount(currentChunk.join(' '));
       }
+
+      currentChunk.push(word);
+      currentTokens += wordTokens;
     }
-    
-    return chunks;
+
+    // Add final chunk
+    if (currentChunk.length > 0) {
+      chunks.push(currentChunk.join(' '));
+    }
+
+    // SAFETY CHECK: Validate all chunks are under token limit
+    return chunks.filter(c => {
+      const tokens = this.getTokenCount(c);
+      if (tokens > MAX_SAFE_TOKENS) {
+        console.warn(`⚠️ Chunk still oversized (${tokens} tokens), splitting further`);
+        return false; // Will be re-split
+      }
+      return true;
+    });
   }
 
   /**

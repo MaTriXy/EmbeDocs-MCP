@@ -10,7 +10,7 @@ export const config = {
     model: 'voyage-context-3',
     dimensions: 1024,
     apiUrl: 'https://api.voyageai.com/v1/contextualizedembeddings',
-    maxBatchSize: 32,
+    maxBatchSize: 8, // Reduced to prevent token limit errors
     maxTokens: 8000,
     timeout: 60000,
     retries: 3,
@@ -31,7 +31,7 @@ export const config = {
     chunkSize: 1500, // Reduced to avoid token limits with voyage-context-3
     chunkOverlap: 150,
     maxParallelDocs: 100,
-    batchSize: 16,
+    batchSize: 8, // Reduced to prevent EPIPE errors
     rateLimit: 100 // ms between API calls
   },
   
