@@ -342,20 +342,32 @@ app.get('/api/progress', async (_req, res) => {
       // Only show repositories that are actually in the database
       const repositories = [];
       
-      // Add ALL products from database (not just custom ones)
-      for (const product of stats.products) {
-        const displayName = product.startsWith('custom-') 
-          ? product.replace('custom-', '').replace(/-/g, '/')
-          : product;
-        
+      // If currently indexing, show the repo being indexed
+      if (isIndexing && indexingProgress) {
         repositories.push({
-          id: product,
-          name: displayName,
-          status: 'completed',
-          progress: 100,
-          phase: 'Completed',
-          documentsProcessed: 'indexed'
+          id: indexingProgress.currentRepo || 'unknown',
+          name: indexingProgress.currentRepo || 'Processing...',
+          status: 'processing',
+          progress: Math.round((indexingProgress.current / indexingProgress.total) * 100),
+          phase: indexingProgress.phase,
+          documentsProcessed: indexingProgress.current
         });
+      } else {
+        // When not indexing, show completed repos from database
+        for (const product of stats.products) {
+          const displayName = product.startsWith('custom-') 
+            ? product.replace('custom-', '').replace(/-/g, '/')
+            : product;
+          
+          repositories.push({
+            id: product,
+            name: displayName,
+            status: 'completed',
+            progress: 100,
+            phase: 'Completed',
+            documentsProcessed: 'indexed'
+          });
+        }
       }
       
       // If no indexing is happening and we have repositories, mark as completed

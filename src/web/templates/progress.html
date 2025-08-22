@@ -583,7 +583,18 @@
             const totalDocs = progress.totalDocuments || 0;
             const repos = progress.repositories || [];
             const completedRepos = repos.filter(r => r.status === 'completed').length;
-            const completionPercent = repos.length > 0 ? Math.round((completedRepos / repos.length) * 100) : 0;
+            
+            // Calculate real progress based on current indexing state
+            let completionPercent = 0;
+            if (progress.isIndexing && progress.currentProgress) {
+                // During indexing, show actual file progress
+                const current = progress.currentProgress.current || 0;
+                const total = progress.currentProgress.total || 1;
+                completionPercent = Math.round((current / total) * 100);
+            } else if (repos.length > 0) {
+                // When not indexing, show repo completion
+                completionPercent = Math.round((completedRepos / repos.length) * 100);
+            }
             
             // Calculate processing rate
             const elapsed = (Date.now() - startTime) / 1000 / 60; // minutes
@@ -599,8 +610,14 @@
             
             const reposElement = document.getElementById('total-repos');
             const currentRepos = parseInt(reposElement.textContent) || 0;
-            if (currentRepos !== repos.length) {
-                animateValue(reposElement, currentRepos, repos.length, 500);
+            // Show actual repo count during indexing, not the database count
+            let repoCount = repos.length;
+            if (progress.isIndexing && progress.currentProgress) {
+                // During indexing, show 1 (the repo being indexed)
+                repoCount = 1;
+            }
+            if (currentRepos !== repoCount) {
+                animateValue(reposElement, currentRepos, repoCount, 500);
             }
             
             document.getElementById('processing-rate').textContent = rate;
